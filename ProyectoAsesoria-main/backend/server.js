@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const { google } = require('googleapis');
 const fs = require('fs');
+require('dotenv').config();
+
 
 const app = express();
 app.use(cors());
@@ -15,27 +17,31 @@ function authorize() {
         credentials.client_email,
         null,
         credentials.private_key,
-        ['https://www.googleapis.com/auth/calendar.events']
+        [
+            'https://www.googleapis.com/auth/calendar.events',
+            'https://www.googleapis.com/auth/gmail.send'
+        ]
     );
 }
 
-app.get('/events', async (req, res) => {
+app.post('/send-email', async (req, res) => {
     try {
         const auth = authorize();
-        const calendar = google.calendar({ version: 'v3', auth });
+        const gmail = google.gmail({ version: 'v1', auth });
 
-        const response = await calendar.events.list({
-            calendarId: 'primary',
-            timeMin: new Date().toISOString(),
-            maxResults: 10,
-            singleEvents: true,
-            orderBy: 'startTime',
+        const emailBase64 = Buffer.from(
+            `From: tuemail@gmail.com\nTo: ${req.body.destino}\nSubject: ${req.body.asunto}\n\n${req.body.mensaje}`
+        ).toString('base64');
+
+        await gmail.users.messages.send({
+            userId: 'me',
+            requestBody: { raw: emailBase64 },
         });
 
-        res.json(response.data.items);
+        res.json({ message: 'Correo enviado correctamente' });
     } catch (error) {
-        console.error('Error fetching events:', error);
-        res.status(500).json({ error: 'Error al obtener eventos' });
+        console.error('Error al enviar correo:', error);
+        res.status(500).json({ error: 'Error al enviar el correo' });
     }
 });
 
