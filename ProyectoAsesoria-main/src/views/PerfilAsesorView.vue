@@ -1,147 +1,152 @@
 <template>
-    <div class="menu-container">
-      <!-- Header -->
-      <header class="header">
-        <img
-          ref="menuIcon"
-          src="@/assets/menu.png"
-          alt="Menú"
-          class="menu-icon"
-          @click="toggleMenu"
-        />
-        <img src="@/assets/logo.png" alt="Logo" class="logo" />
-      </header>
-  
-      <!-- Menú desplegable -->
-      <div
-        v-show="menuOpen"
-        class="dropdown-menu"
-      >
-        <button class="dropdown-button" @click="goToMenu">Mis asesorias</button>
-        <button class="dropdown-button" @click="goToAsistencias">Asistencias</button>
-        <button class="dropdown-button"  @click="goToComentarios">Comentarios</button>
-        <button class="dropdown-button" @click="goToNoti">Notificaciones</button>
-        <button class="dropdown-button">Salir</button>
-      </div>
-  
-      <!-- Contenido principal -->
-      <div class="content-container">
-        <div class="text-section">
-          <p class="bold-text">Datos Generales Asesor</p>
-        </div>
-      </div>
+  <div class="menu-container">
+    <!-- Header -->
+    <header class="header">
+      <img ref="menuIcon" src="@/assets/menu.png" alt="Menú" class="menu-icon" @click="toggleMenu"/>
+      <img src="@/assets/logo.png" alt="Logo" class="logo" />
+    </header>
+
+    <!-- Menú desplegable -->
+    <div v-show="menuOpen" class="dropdown-menu">
+      <button class="dropdown-button" @click="goToPerfil">Perfil</button>
+      <button class="dropdown-button" @click="goToSoliTema">Solicitud de tema</button>
+      <button class="dropdown-button" @click="goToMenu">Solicitud de asesoría</button>
+      <button class="dropdown-button" @click="goToNoti">Notificaciones</button>
+      <button class="dropdown-button" @click="goToEvaluacion">Evaluación</button>
+      <button class="dropdown-button">Salir</button>
     </div>
-  </template>
-  
-  <script>
-  export default {
-    name: "PerfilAsesorView",
-    data() {
-      return {
-        menuOpen: false,
-      };
+
+    <!-- Cuadro de llenado de datos -->
+    <div class="data-box">
+      <p class="data-title">Mis datos personales</p>
+      <form @submit.prevent="guardarDatos">
+        <label>Nombre:</label>
+        <input type="text" v-model="nombre" required />
+        
+        <label>Correo:</label>
+        <input type="email" v-model="correo" required />
+        
+        <label>Matrícula:</label>
+        <input type="text" v-model="matricula" required />
+        
+        <button type="submit">Guardar</button>
+      </form>
+
+      <!-- Tabla para mostrar datos ingresados -->
+      <table v-if="datos.length">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Correo</th>
+            <th>Matrícula</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="dato in datos" :key="dato.correo">
+            <td>{{ dato.nombre }}</td>
+            <td>{{ dato.correo }}</td>
+            <td>{{ dato.matricula }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      menuOpen: false,
+      nombre: "",
+      correo: "",
+      matricula: "",
+      datos: []
+    };
+  },
+  methods: {
+    toggleMenu() {
+      this.menuOpen = !this.menuOpen;
     },
-    methods: {
-      toggleMenu() {
-        this.menuOpen = !this.menuOpen;
-        console.log("menuOpen:", this.menuOpen);
-      },
-      goToAsistencias() {
-        this.$router.push({ name: "AsistenciaAsesor" }); 
-      },
-      goToNoti() {
-        this.$router.push({ name: "NotiAsesor" }); 
-      },
-      goToComentarios() {
-        this.$router.push({ name: "ComentariosAsesor" });
-      },
-      goToMenu() {
-        this.$router.push({ name: "MenuAsesor" });
-      },
+    guardarDatos() {
+      this.datos.push({
+        nombre: this.nombre,
+        correo: this.correo,
+        matricula: this.matricula
+      });
+      
+      this.nombre = "";
+      this.correo = "";
+      this.matricula = "";
     },
-  };
-  </script>
-  
-  <style>
-  .menu-container {
-    position: relative;
+    goToPerfil() {
+      this.$router.push({ name: "PerfilAsesorado" });
+    },
+    goToNoti() {
+      this.$router.push({ name: "NotiAsesorado" });
+    },
+    goToSoliTema() {
+      this.$router.push({ name: "SolicitudTema" });
+    },
+    goToEvaluacion() {
+      this.$router.push({ name: "Evaluacion" });
+    },
+    goToMenu() {
+      this.$router.push({ name: "MenuAsesorado" });
+    },
   }
-  
-  /* Header */
-  .header {
-    position: fixed;
-    top: 0;
-    width: 100%;
-    background-color: #2e2a67;
-    display: flex;
-    justify-content: center; /* Centra el logo horizontalmente */
-    align-items: center; /* Centra el logo verticalmente */
-    height: 100px;
-    z-index: 100;
-    padding: 0 20px;
-  }
-  
-  .menu-icon {
-    position: absolute;
-    left: 20px;
-    width: 40px;
-    height: auto;
-    cursor: pointer;
-  }
-  
-  .logo {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    max-height: 80px;
-    height: auto;
-  }
-  
-  /* Menú desplegable */
-  .dropdown-menu {
-    position: fixed;
-    top: 100px; /* justo debajo del header */
-    left: 20px; /* exactamente donde está el ícono del menú */
-    background-color: white;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    padding: 10px;
-    z-index: 200;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
-  
-  .dropdown-button {
-    display: block;
-    width: 150px;
-    padding: 10px;
-    background-color: #2e2a67;
-    color: white;
-    border: none;
-    text-align: left;
-    cursor: pointer;
-    border-radius: 5px;
-  }
-  
-  .dropdown-button:hover {
-    background-color: #1a1a5e;
-  }
-  
-  /* Contenido principal */
-  .content-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 140px;
-  }
-  
-  .bold-text {
-    font-weight: bold;
-    font-size: 1.5rem;
-    color: #0a0a0a;
-    text-align: center;
-  }
-  </style>
-  
+};
+</script>
+
+<style>
+/* Estilos generales */
+.data-box {
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  max-width: 500px;
+  margin: 20px auto;
+}
+
+label {
+  display: block;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+button {
+  margin-top: 10px;
+  background-color: #2e2a67;
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  width: 100%;
+}
+
+button:hover {
+  background-color: #1a1a5e;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: center;
+}
+</style>

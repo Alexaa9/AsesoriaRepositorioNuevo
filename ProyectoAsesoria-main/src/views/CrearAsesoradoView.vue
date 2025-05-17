@@ -1,44 +1,87 @@
 <template>
-    <div>
-      <!-- Header -->
-      <header class="header">
-        <img src="@/assets/logo.png" alt="Logo" class="logo" />
-      </header>
-  
-      <!-- Título principal -->
-      <div class="icon-container">
-        <p class="bold-text">Crear cuenta nueva</p>
-      </div>
-  
-      <!-- Sección de matrícula -->
-      <div class="input-group">
-        <label class="form-label">Matrícula:</label>
-        <input type="text" class="form-input" placeholder="Escribe tu matrícula" />
-      </div>
-  
-      <!-- Sección de correo -->
-      <div class="input-group">
-        <label class="form-label">Correo:</label>
-        <input type="text" class="form-input" placeholder="Escribe tu correo" />
-      </div>
-  
-      <!-- Sección de contraseña -->
-      <div class="input-group">
-        <label class="form-label">Contraseña:</label>
-        <input type="password" class="form-input" placeholder="Escribe tu contraseña" />
-      </div>
-  
-      <!-- Sección de confirmar contraseña -->
-      <div class="input-group">
-        <label class="form-label">Confirmar contraseña:</label>
-        <input type="password" class="form-input" placeholder="Confirma tu contraseña" />
-      </div>
-      
-  <button class="crear-cuenta-button">Crear cuenta</button>
+  <div>
+    <!-- Header -->
+    <header class="header">
+      <img src="@/assets/logo.png" alt="Logo" class="logo" />
+    </header>
 
-
+    <!-- Título principal -->
+    <div class="icon-container">
+      <p class="bold-text">Crear cuenta nueva</p>
     </div>
-  </template>
+
+    <!-- Sección de matrícula -->
+    <div class="input-group">
+      <label class="form-label">Matrícula:</label>
+      <input v-model="matricula" type="text" class="form-input" placeholder="Escribe tu matrícula" />
+    </div>
+
+    <!-- Sección de correo -->
+    <div class="input-group">
+      <label class="form-label">Correo:</label>
+      <input v-model="email" type="email" class="form-input" placeholder="Escribe tu correo" />
+    </div>
+
+    <!-- Sección de contraseña -->
+    <div class="input-group">
+      <label class="form-label">Contraseña:</label>
+      <input v-model="password" type="password" class="form-input" placeholder="Escribe tu contraseña" />
+    </div>
+
+    <!-- Sección de confirmar contraseña -->
+    <div class="input-group">
+      <label class="form-label">Confirmar contraseña:</label>
+      <input v-model="confirmPassword" type="password" class="form-input" placeholder="Confirma tu contraseña" />
+    </div>
+
+    <button @click="handleRegister" class="crear-cuenta-button">Crear cuenta</button>
+  </div>
+</template>
+
+<script>
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { collection, addDoc } from "firebase/firestore";
+import { auth, db } from "@/firebase/firebaseConfig";
+
+export default {
+  data() {
+    return {
+      matricula: "",
+      email: "",
+      password: "",
+      confirmPassword: ""
+    };
+  },
+  methods: {
+    async handleRegister() {
+      if (this.password !== this.confirmPassword) {
+        alert("Las contraseñas no coinciden");
+        return;
+      }
+
+      try {
+        // Registrar usuario en Firebase Authentication
+        const userCredential = await createUserWithEmailAndPassword(auth, this.email, this.password);
+        const user = userCredential.user;
+        console.log("Usuario registrado:", user.uid);
+
+        // Guardar datos en Firestore
+        await addDoc(collection(db, "Asesorado"), {
+          uid: user.uid,
+          matricula: this.matricula,
+          correo: this.email
+        });
+
+        alert("Cuenta creada exitosamente");
+        this.$router.push("/login-alumno");
+      } catch (error) {
+        alert("Error al crear cuenta: " + error.message);
+      }
+    }
+  }
+};
+</script>
+  
   
   <style>
   /* Header */

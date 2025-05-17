@@ -22,32 +22,46 @@
       <button class="dropdown-button">Salir</button>
     </div>
 
-    <!-- Contenido principal -->
-    <div class="content-container">
-      <div class="text-section">
-        <p class="bold-text">Datos Generales</p>
-      </div>
+   <div class="data-box">
+  <p class="data-title">Mis datos personales</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Correo</th>
+        <th>Matrícula</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="dato in datosPersonales" :key="dato.correo">
+        <td>{{ dato.nombre }}</td>
+        <td>{{ dato.correo }}</td>
+        <td>{{ dato.matricula }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
-      <!-- Cuadros de Datos -->
-      <div class="data-container">
-        <div class="data-box">
-          <p class="data-title">Mis datos personales</p>
-        </div>
         <div class="data-box">
           <p class="data-title">Mis datos académicos</p>
         </div>
       </div>
-    </div>
-  </div>
+  
 </template>
 
 <script>
+import { obtenerDatosPersonales } from "@/firebase/firestore";
+
 export default {
   name: "PerfilAsesoradoView",
   data() {
     return {
       menuOpen: false,
+      datosPersonales: [], // 🔹 Variable para almacenar los datos de la tabla
     };
+  },
+  async mounted() {
+    this.datosPersonales = await obtenerDatosPersonales();
   },
   methods: {
     toggleMenu() {
@@ -71,6 +85,7 @@ export default {
   },
 };
 </script>
+
 
 <style>
 .menu-container {

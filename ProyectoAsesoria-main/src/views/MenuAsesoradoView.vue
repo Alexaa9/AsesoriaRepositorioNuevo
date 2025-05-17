@@ -41,8 +41,21 @@
         <input type="text" class="search-input" placeholder="Escribe aquí tu búsqueda..." />
       </div>
 
-      <!-- Calendario de asesorías -->
-      <FullCalendar :options="calendarOptions" class="calendar-container" />
+      <div class="calendar-container">
+  <iframe 
+    src="https://calendar.google.com/calendar/embed?src=tucorreo@gmail.com&ctz=America/Mexico_City"
+    style="border: 0"
+    width="800"
+    height="600"
+    frameborder="0"
+    scrolling="no">
+  </iframe>
+
+  <button @click="openGoogleCalendar" class="access-button">
+    Abrir Google Calendar
+  </button>
+</div>
+
     </div>
   </div>
 </template>
