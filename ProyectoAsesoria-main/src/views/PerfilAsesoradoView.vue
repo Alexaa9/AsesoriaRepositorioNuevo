@@ -16,38 +16,26 @@
       <button class="dropdown-button" @click="goToSalir">Salir</button>
     </div>
 
-<<<<<<< HEAD
-   <div class="data-box">
-  <p class="data-title">Mis datos personales</p>
-  <table>
-    <thead>
-      <tr>
-        <th>Nombre</th>
-        <th>Correo</th>
-        <th>Matrícula</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr v-for="dato in datosPersonales" :key="dato.correo">
-        <td>{{ dato.nombre }}</td>
-        <td>{{ dato.correo }}</td>
-        <td>{{ dato.matricula }}</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+    <div class="data-box">
+      <p class="data-title">Mis datos personales</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Correo</th>
+            <th>Matrícula</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="dato in datosPersonales" :key="dato.correo">
+            <td>{{ dato.nombre }}</td>
+            <td>{{ dato.correo }}</td>
+            <td>{{ dato.matricula }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-        <div class="data-box">
-          <p class="data-title">Mis datos académicos</p>
-        </div>
-      </div>
-  
-</template>
-
-<script>
-import { obtenerDatosPersonales } from "@/firebase/firestore";
-
-    <!-- Formulario de datos -->
     <div class="data-form">
       <p class="data-title">Mis Datos Personales</p>
       <form @submit.prevent="guardarDatos">
@@ -79,20 +67,14 @@ import { obtenerDatosPersonales } from "@/firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/firebase/firebaseConfig";
-
+import { obtenerDatosPersonales } from "@/firebase/firestore";
 
 export default {
   name: "PerfilAsesoradoView",
   data() {
     return {
       menuOpen: false,
-
-      datosPersonales: [], // 🔹 Variable para almacenar los datos de la tabla
-    };
-  },
-  async mounted() {
-    this.datosPersonales = await obtenerDatosPersonales();
-
+      datosPersonales: [],
       formData: {
         nombre: "",
         apellidos: "",
@@ -104,13 +86,12 @@ export default {
     };
   },
   async mounted() {
+    this.datosPersonales = await obtenerDatosPersonales();
     const auth = getAuth();
     const user = auth.currentUser;
 
     if (user) {
       this.formData.correo = user.email;
-
-      // Obtener datos guardados
       const userDocRef = doc(db, "Asesorado", user.email);
       const docSnap = await getDoc(userDocRef);
 
@@ -118,7 +99,6 @@ export default {
         this.formData = { ...docSnap.data(), correo: user.email };
       }
     }
-
   },
   methods: {
     toggleMenu() {
@@ -152,104 +132,3 @@ export default {
   }
 };
 </script>
-
-
-<style>
-.menu-container {
-  position: relative;
-}
-
-/* Header */
-.header {
-  position: fixed;
-  top: 0;
-  width: 100%;
-  background-color: #2e2a67;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100px;
-  z-index: 100;
-  padding: 0 20px;
-}
-
-/* Menú desplegable */
-.dropdown-menu {
-  position: fixed;
-  top: 100px;
-  left: 20px;
-  background-color: white;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  padding: 10px;
-  z-index: 200;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.dropdown-button {
-  width: 150px;
-  padding: 10px;
-  background-color: #2e2a67;
-  color: white;
-  border: none;
-  text-align: left;
-  cursor: pointer;
-  border-radius: 5px;
-}
-
-.dropdown-button:hover {
-  background-color: #1a1a5e;
-}
-
-/* Formulario de datos */
-.data-form {
-  width: 60%;
-  margin: 100px auto;
-  background-color: #f5f5f5;
-  padding: 20px;
-  border-radius: 10px;
-  text-align: center;
-}
-
-.data-title {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 10px;
-}
-
-form {
-  display: flex;
-  flex-direction: column;
-}
-
-label {
-  font-size: 1rem;
-  color: #333;
-  margin-top: 10px;
-}
-
-input {
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  width: 100%;
-}
-
-.submit-button {
-  margin-top: 15px;
-  background-color: #2e2a67;
-  color: white;
-  border: none;
-  padding: 10px;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.submit-button:hover {
-  background-color: #1a1a5e;
-}
-</style>

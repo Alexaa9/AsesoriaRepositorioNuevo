@@ -47,23 +47,6 @@
         />
       </div>
 
-<<<<<<< HEAD
-      <div class="calendar-container">
-  <iframe 
-    src="https://calendar.google.com/calendar/embed?src=tucorreo@gmail.com&ctz=America/Mexico_City"
-    style="border: 0"
-    width="800"
-    height="600"
-    frameborder="0"
-    scrolling="no">
-  </iframe>
-
-  <button @click="openGoogleCalendar" class="access-button">
-    Abrir Google Calendar
-  </button>
-</div>
-
-=======
       <!-- Lista de asesorías confirmadas -->
       <div class="confirmed-asesorias">
         <h3>Asesorías Confirmadas</h3>
@@ -80,25 +63,6 @@
         <p v-else>No hay asesorías confirmadas.</p>
       </div>
 
-      <!-- Resultados -->
-      <div v-if="asesorias.length" class="result-container">
-        <ul>
-          <li v-for="(asesoria, index) in asesorias" :key="index">
-            <div>
-              <strong>{{ asesoria.titulo }}</strong> - {{ asesoria.descripcion }}
-            </div>
-            <div>
-              <button class="confirm-button" @click="confirmAsesoria(asesoria)">Confirmar</button>
-              <button class="delete-button" @click="deleteAsesoria(index)">❌</button>
-            </div>
-          </li>
-        </ul>
-      </div>
-
-      <div v-else-if="searchQuery">
-        <p>No se encontraron asesorías.</p>
-      </div>
-
       <!-- Calendario -->
       <div class="calendar-container">
         <iframe 
@@ -111,7 +75,6 @@
         </iframe>
         <button @click="openGoogleCalendar" class="access-button">Abrir Google Calendar</button>
       </div>
->>>>>>> a0d9eff (Asesorado y asesor casi terminados)
     </div>
   </div>
 </template>
@@ -181,23 +144,6 @@ export default {
     openGoogleCalendar() {
       window.open(this.calendarUrl, "_blank");
     },
-    async searchAsesoria() {
-      try {
-        const asesoriasRef = collection(db, "Asesorias");
-
-        let q;
-        if (this.searchQuery) {
-          q = query(asesoriasRef, where("titulo", ">=", this.searchQuery), where("titulo", "<=", this.searchQuery + "\uf8ff"));
-        } else {
-          q = asesoriasRef;
-        }
-
-        const querySnapshot = await getDocs(q);
-        this.asesorias = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      } catch (error) {
-        console.error("Error buscando asesorías:", error);
-      }
-    },
     confirmAsesoria(asesoria) {
       this.confirmedAsesorias.push(asesoria);
       localStorage.setItem("confirmedAsesorias", JSON.stringify(this.confirmedAsesorias));
@@ -209,6 +155,7 @@ export default {
   }
 };
 </script>
+
 
 
 <style>
