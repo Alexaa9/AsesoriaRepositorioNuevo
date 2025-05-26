@@ -22,7 +22,7 @@
           <button class="profile-button" @click="goToPerfil">
             <img src="@/assets/asesorado.png" alt="Perfil" class="profile-icon" />
           </button>
-          <p class="profile-name">Nombre completo</p>
+          <p class="profile-name">{{ userFullName }}</p>
         </div>
 
         <p class="bold-text">Búsqueda de Asesoría</p>
@@ -38,9 +38,16 @@
       <!-- Barra de búsqueda -->
       <div class="search-input-wrapper">
         <img src="@/assets/buscador.png" alt="Buscar" class="search-icon" />
-        <input type="text" class="search-input" placeholder="Escribe aquí tu búsqueda..." />
+        <input 
+          type="text" 
+          v-model="searchQuery" 
+          class="search-input" 
+          placeholder="Escribe aquí tu búsqueda..." 
+          @input="searchAsesoria"
+        />
       </div>
 
+<<<<<<< HEAD
       <div class="calendar-container">
   <iframe 
     src="https://calendar.google.com/calendar/embed?src=tucorreo@gmail.com&ctz=America/Mexico_City"
@@ -56,30 +63,98 @@
   </button>
 </div>
 
+=======
+      <!-- Lista de asesorías confirmadas -->
+      <div class="confirmed-asesorias">
+        <h3>Asesorías Confirmadas</h3>
+        <ul v-if="confirmedAsesorias.length">
+          <li v-for="(asesoria, index) in confirmedAsesorias" :key="index">
+            <p><strong>Título:</strong> {{ asesoria.titulo }}</p>
+            <p><strong>Descripción:</strong> {{ asesoria.descripcion }}</p>
+            <p><strong>Fecha:</strong> {{ asesoria.fecha }}</p>
+            <p><strong>Hora:</strong> {{ asesoria.hora }}</p>
+            <p><strong>Asesor:</strong> {{ asesoria.asesor }}</p>
+            <button @click="eliminarAsesoriaConfirmada(index)" class="delete-button">Eliminar</button>
+          </li>
+        </ul>
+        <p v-else>No hay asesorías confirmadas.</p>
+      </div>
+
+      <!-- Resultados -->
+      <div v-if="asesorias.length" class="result-container">
+        <ul>
+          <li v-for="(asesoria, index) in asesorias" :key="index">
+            <div>
+              <strong>{{ asesoria.titulo }}</strong> - {{ asesoria.descripcion }}
+            </div>
+            <div>
+              <button class="confirm-button" @click="confirmAsesoria(asesoria)">Confirmar</button>
+              <button class="delete-button" @click="deleteAsesoria(index)">❌</button>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div v-else-if="searchQuery">
+        <p>No se encontraron asesorías.</p>
+      </div>
+
+      <!-- Calendario -->
+      <div class="calendar-container">
+        <iframe 
+          :src="calendarUrl"
+          style="border: 0"
+          width="800"
+          height="600"
+          frameborder="0"
+          scrolling="no">
+        </iframe>
+        <button @click="openGoogleCalendar" class="access-button">Abrir Google Calendar</button>
+      </div>
+>>>>>>> a0d9eff (Asesorado y asesor casi terminados)
     </div>
   </div>
 </template>
 
 <script>
-
-import axios from 'axios';
-import FullCalendar from '@fullcalendar/vue3';
-import dayGridPlugin from '@fullcalendar/daygrid';
+import { getAuth } from "firebase/auth";
+import { doc, getDoc, collection, query, getDocs, where } from "firebase/firestore";
+import { db } from "@/firebase/firebaseConfig";
 
 export default {
   name: "MenuAsesoradoView",
-  components: {
-    FullCalendar
-  },
   data() {
     return {
       menuOpen: false,
-      calendarOptions: {
-        plugins: [dayGridPlugin],
-        initialView: 'dayGridMonth',
-        events: [] // Se llenará en mounted()
-      }
+      userEmail: "",
+      userFullName: "Nombre completo",
+      calendarUrl: "",
+      searchQuery: "",
+      asesorias: [],
+      confirmedAsesorias: [] // 🔹 Almacena todas las asesorías confirmadas
     };
+  },
+  async mounted() {
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (user) {
+      this.userEmail = user.email;
+      this.calendarUrl = `https://calendar.google.com/calendar/embed?src=${this.userEmail}&ctz=America/Mexico_City`;
+
+      const userDocRef = doc(db, "Asesorado", user.email);
+      const docSnap = await getDoc(userDocRef);
+
+      if (docSnap.exists()) {
+        this.userFullName = `${docSnap.data().nombre} ${docSnap.data().apellidos}`;
+      }
+    }
+
+    // Recuperar asesorías confirmadas de localStorage
+    const savedAsesorias = localStorage.getItem("confirmedAsesorias");
+    if (savedAsesorias) {
+      this.confirmedAsesorias = JSON.parse(savedAsesorias);
+    }
   },
   methods: {
     toggleMenu() {
@@ -102,138 +177,98 @@ export default {
     },
     goToSalir() {
       this.$router.push({ name: "Inicio" });
-    }
-  },
-  async mounted() {
-    try {
-      const response = await axios.get('http://localhost:8080/events');
-      this.calendarOptions.events = response.data.map(event => ({
-        title: event.summary,
-        date: event.start.dateTime || event.start.date
-      }));
-    } catch (error) {
-      console.error("Error cargando eventos:", error);
+    },
+    openGoogleCalendar() {
+      window.open(this.calendarUrl, "_blank");
+    },
+    async searchAsesoria() {
+      try {
+        const asesoriasRef = collection(db, "Asesorias");
+
+        let q;
+        if (this.searchQuery) {
+          q = query(asesoriasRef, where("titulo", ">=", this.searchQuery), where("titulo", "<=", this.searchQuery + "\uf8ff"));
+        } else {
+          q = asesoriasRef;
+        }
+
+        const querySnapshot = await getDocs(q);
+        this.asesorias = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      } catch (error) {
+        console.error("Error buscando asesorías:", error);
+      }
+    },
+    confirmAsesoria(asesoria) {
+      this.confirmedAsesorias.push(asesoria);
+      localStorage.setItem("confirmedAsesorias", JSON.stringify(this.confirmedAsesorias));
+    },
+    eliminarAsesoriaConfirmada(index) {
+      this.confirmedAsesorias.splice(index, 1);
+      localStorage.setItem("confirmedAsesorias", JSON.stringify(this.confirmedAsesorias));
     }
   }
 };
 </script>
 
+
 <style>
-.menu-container {
-  position: relative;
-}
-
-/* Header */
-.header {
-  position: fixed;
-  top: 0;
-  width: 100%;
-  background-color: #2e2a67;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100px;
-  z-index: 100;
-  padding: 0 20px;
-}
-
-.menu-icon {
-  position: absolute;
-  left: 20px;
-  width: 40px;
-  height: auto;
-  cursor: pointer;
-}
-
-.logo {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  max-height: 80px;
-  height: auto;
-}
-
-/* Menú desplegable */
-.dropdown-menu {
-  position: fixed;
-  top: 100px;
-  left: 20px;
-  background-color: white;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  padding: 10px;
-  z-index: 200;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.dropdown-button {
-  width: 150px;
-  padding: 10px;
-  background-color: #2e2a67;
-  color: white;
-  border: none;
-  text-align: left;
-  cursor: pointer;
-  border-radius: 5px;
-}
-
-.dropdown-button:hover {
-  background-color: #1a1a5e;
-}
-
-/* Contenedor principal */
-.content-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 140px;
-}
-
-/* Barra de búsqueda */
 .search-input-wrapper {
   position: relative;
-  display: flex;
-  align-items: center;
-  width: 50%;
+  width: 100%;
   max-width: 500px;
-  border: 1px solid #ccc;
-  border-radius: 20px;
-  padding: 5px;
-  background-color: white;
+  margin: 20px auto;
 }
 
 .search-input {
-  flex: 1;
-  border: none;
-  outline: none;
-  padding: 8px 12px;
-  padding-left: 35px;
-  font-size: 1rem;
+  width: 100%;
+  padding: 12px 40px;
+  font-size: 16px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
 }
 
 .search-icon {
   position: absolute;
-  left: 10px;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
   width: 20px;
   height: 20px;
 }
 
-.search-input::placeholder {
-  color: #aaa;
-  font-style: italic;
+.confirm-button {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  margin-right: 5px;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
-/* Calendario */
-.fc {
-  width: 100%;
-  max-width: 800px;
-  margin: 20px auto;
+.confirm-button:hover {
+  background-color: #45a049;
 }
 
-.calendar-container {
+.delete-button {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.delete-button:hover {
+  background-color: #d32f2f;
+}
+
+.confirmed-asesoria {
+  background-color: #e8f5e9;
+  padding: 15px;
+  border-radius: 10px;
   margin-top: 20px;
+  border: 1px solid #c8e6c9;
+  text-align: center;
 }
 </style>

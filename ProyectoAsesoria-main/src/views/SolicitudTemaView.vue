@@ -16,7 +16,7 @@
     <div v-show="menuOpen" class="dropdown-menu">
       <button class="dropdown-button" @click="goToPerfil">Perfil</button>
       <button class="dropdown-button">Solicitud de tema</button>
-      <button class="dropdown-button" @click="goToMenu">Busqueda de Asesorias</button>
+      <button class="dropdown-button" @click="goToMenu">Búsqueda de Asesorías</button>
       <button class="dropdown-button" @click="goToNoti">Notificaciones</button>
       <button class="dropdown-button" @click="goToEvaluacion">Evaluación</button>
       <button class="dropdown-button">Salir</button>
@@ -28,19 +28,21 @@
         <p class="bold-text">Solicitud de Tema</p>
       </div>
 
-      <!-- Párrafo adicional y campos de texto -->
       <div class="paragraph-section">
         <p class="paragraph">
           Si requieres de una asesoría que no se encuentra en este sitio, por favor envía tu solicitud.
         </p>
+
         <div class="input-group">
           <label class="form-label">Materia:</label>
           <input v-model="materia" type="text" class="form-input" placeholder="Escribe aquí..." />
         </div>
+
         <div class="input-group">
           <label class="form-label">Tema:</label>
           <input v-model="tema" type="text" class="form-input" placeholder="Escribe aquí..." />
         </div>
+
         <div class="input-group">
           <label class="form-label">Urgencia:</label>
           <select v-model="urgencia" class="form-select">
@@ -50,9 +52,18 @@
             <option value="Bajo">Bajo</option>
           </select>
         </div>
+
+        <div class="input-group">
+          <label class="form-label">Hora de la asesoría:</label>
+          <input v-model="hora" type="time" class="form-input" />
+        </div>
+
+        <div class="input-group">
+          <label class="form-label">Fecha de la asesoría:</label>
+          <input v-model="fechaSeleccionada" type="date" class="form-input" />
+        </div>
       </div>
 
-      <!-- Botón Enviar -->
       <div class="button-section">
         <button class="send-button" @click="enviarSolicitud">Enviar</button>
       </div>
@@ -61,6 +72,8 @@
 </template>
 
 <script>
+import { getFirestore, collection, addDoc } from "firebase/firestore";
+
 export default {
   name: "SolicitudTema",
   data() {
@@ -68,7 +81,9 @@ export default {
       menuOpen: false,
       materia: "",
       tema: "",
-      urgencia: "" // Ahora almacena solo un valor en lugar de un array
+      urgencia: "",
+      hora: "",
+      fechaSeleccionada: ""
     };
   },
   methods: {
@@ -87,12 +102,37 @@ export default {
     goToMenu() {
       this.$router.push({ name: "MenuAsesorado" });
     },
-    enviarSolicitud() {
-      console.log("Solicitud enviada con los siguientes datos:");
-      console.log("Materia:", this.materia);
-      console.log("Tema:", this.tema);
-      console.log("Urgencia:", this.urgencia);
-      alert("Solicitud enviada correctamente.");
+    async enviarSolicitud() {
+      if (!this.materia || !this.tema || !this.urgencia || !this.hora || !this.fechaSeleccionada) {
+        alert("Por favor, llena todos los campos.");
+        return;
+      }
+
+      try {
+        const db = getFirestore();
+        const solicitudesRef = collection(db, "Asesorias", "Solicitudes", "solicitudes");
+
+        await addDoc(solicitudesRef, {
+          materia: this.materia,
+          tema: this.tema,
+          urgencia: this.urgencia,
+          hora: this.hora,
+          fechaAsesoria: this.fechaSeleccionada,
+          fechaSolicitud: new Date().toISOString()
+        });
+
+        alert("Solicitud enviada correctamente.");
+
+        // Limpiar campos
+        this.materia = "";
+        this.tema = "";
+        this.urgencia = "";
+        this.hora = "";
+        this.fechaSeleccionada = "";
+      } catch (error) {
+        console.error("Error al enviar la solicitud:", error);
+        alert("Hubo un error al enviar la solicitud.");
+      }
     }
   }
 };
@@ -103,7 +143,6 @@ export default {
   position: relative;
 }
 
-/* Header */
 .header {
   position: fixed;
   top: 0;
@@ -133,7 +172,6 @@ export default {
   height: auto;
 }
 
-/* Menú desplegable */
 .dropdown-menu {
   position: fixed;
   top: 100px;
@@ -165,7 +203,6 @@ export default {
   background-color: #1a1a5e;
 }
 
-/* Contenido principal */
 .content-container {
   display: flex;
   flex-direction: column;
@@ -174,7 +211,6 @@ export default {
   height: auto;
 }
 
-/* Párrafo adicional */
 .paragraph-section {
   margin-top: 20px;
   width: 100%;
@@ -188,35 +224,31 @@ export default {
   margin-bottom: 10px;
 }
 
-/* Grupo de entrada */
 .input-group {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 10px;
+  margin: 10px;
 }
 
-/* Lista desplegable de Urgencia */
-.form-select {
+.form-select,
+.form-input {
   width: 250px;
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 1rem;
-  cursor: pointer;
 }
 
-/* Botón Enviar */
 .button-section {
   text-align: center;
   margin-top: 20px;
-  background-color: #2e2a67; /* Azul marino */
-  border-radius: 10px;
- 
+  background-color: #2e2a67;
 }
 
 .send-button {
-  background-color: #2e2a67; /* Azul marino */
+  background-color: #2e2a67;
   color: white;
   border: none;
   border-radius: 10px;
@@ -226,6 +258,6 @@ export default {
 }
 
 .send-button:hover {
-  background-color: #d3d3d3; /* Gris claro */
+  background-color: #d3d3d3;
 }
 </style>

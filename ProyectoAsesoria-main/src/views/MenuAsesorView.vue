@@ -41,6 +41,7 @@
         <p class="bold-text">Crear Nueva Asesoría</p>
         <input v-model="nuevaAsesoria.titulo" type="text" placeholder="Título de la asesoría" class="asesoria-input"/>
         <input v-model="nuevaAsesoria.fecha" type="date" class="asesoria-input"/>
+        <input v-model="nuevaAsesoria.hora" type="time" class="asesoria-input"/>  <!-- 🔹 Campo de hora agregado -->
         <button @click="guardarAsesoria" class="asesoria-button">Guardar</button>
       </div>
 
@@ -49,7 +50,7 @@
         <p class="bold-text">Mis Asesorías</p>
         <ul>
           <li v-for="asesoria in asesorias" :key="asesoria.id">
-            {{ asesoria.titulo }} - {{ asesoria.fecha }}
+            {{ asesoria.titulo }} - {{ asesoria.fecha }} - {{ asesoria.hora }}
           </li>
         </ul>
       </div>
@@ -83,7 +84,8 @@ export default {
       menuOpen: false,
       nuevaAsesoria: {
         titulo: "",
-        fecha: ""
+        fecha: "",
+        hora: ""  // 🔹 Nuevo campo para la hora
       },
       asesorias: []
     };
@@ -115,7 +117,7 @@ export default {
     },
 
     async guardarAsesoria() {
-      if (!this.nuevaAsesoria.titulo || !this.nuevaAsesoria.fecha) {
+      if (!this.nuevaAsesoria.titulo || !this.nuevaAsesoria.fecha || !this.nuevaAsesoria.hora) {
         alert("Por favor, llena todos los campos.");
         return;
       }
@@ -124,12 +126,14 @@ export default {
         const db = getFirestore();
         await addDoc(collection(db, "Asesorias"), {
           titulo: this.nuevaAsesoria.titulo,
-          fecha: this.nuevaAsesoria.fecha
+          fecha: this.nuevaAsesoria.fecha,
+          hora: this.nuevaAsesoria.hora  // 🔹 Guarda la hora en Firestore
         });
 
         alert("Asesoría guardada correctamente en Firestore.");
         this.nuevaAsesoria.titulo = "";
         this.nuevaAsesoria.fecha = "";
+        this.nuevaAsesoria.hora = "";
         this.cargarAsesorias();
       } catch (error) {
         console.error("Error al guardar asesoría:", error);
@@ -152,6 +156,7 @@ export default {
   }
 };
 </script>
+
 
 <style>
 .header {
