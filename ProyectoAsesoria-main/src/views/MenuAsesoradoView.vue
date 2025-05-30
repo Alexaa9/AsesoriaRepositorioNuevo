@@ -47,20 +47,49 @@
         />
       </div>
 
-      <!-- Lista de asesorías confirmadas -->
-      <div class="confirmed-asesorias">
-        <h3>Asesorías Confirmadas</h3>
-        <ul v-if="confirmedAsesorias.length">
-          <li v-for="(asesoria, index) in confirmedAsesorias" :key="index">
-            <p><strong>Título:</strong> {{ asesoria.titulo }}</p>
-            <p><strong>Descripción:</strong> {{ asesoria.descripcion }}</p>
-            <p><strong>Fecha:</strong> {{ asesoria.fecha }}</p>
-            <p><strong>Hora:</strong> {{ asesoria.hora }}</p>
-            <p><strong>Asesor:</strong> {{ asesoria.asesor }}</p>
-            <button @click="eliminarAsesoriaConfirmada(index)" class="delete-button">Eliminar</button>
+      <!-- Mostrar asesorías confirmadas -->
+      <div v-if="asesoriasConfirmadas.length" class="confirmed-asesorias-container">
+        <div
+          v-for="asesoria in asesoriasConfirmadas"
+          :key="asesoria.id"
+          class="confirmed-asesoria"
+        >
+          <h3>Asesoría Confirmada</h3>
+          <p><strong>Título:</strong> {{ asesoria.titulo }}</p>
+          <p><strong>Descripción:</strong> {{ asesoria.descripcion }}</p>
+          <p><strong>Fecha:</strong> {{ asesoria.fecha }}</p>
+          <p><strong>Hora:</strong> {{ asesoria.hora }}</p>
+          <p><strong>Asesor:</strong> {{ asesoria.nombreAsesor }}</p>
+          <p><strong>Aula:</strong> {{ asesoria.aula }}</p>
+          <p><strong>Modalidad:</strong> {{ asesoria.modalidad }}</p>
+          <p v-if="asesoria.modalidad === 'virtual'">
+            <strong>Enlace Meet:</strong> <a :href="asesoria.meetLink" target="_blank">{{ asesoria.meetLink }}</a>
+          </p>
+          <button @click="eliminarAsesoriaConfirmada(asesoria.id)" class="delete-button">Eliminar Asesoría</button>
+        </div>
+      </div>
+
+      <!-- Resultados -->
+      <div v-if="asesorias.length" class="result-container">
+        <ul>
+          <li v-for="(asesoria, index) in asesorias" :key="asesoria.id">
+            <div>
+              <strong>{{ asesoria.titulo }}</strong> - {{ asesoria.descripcion }}<br />
+              <strong>Fecha:</strong> {{ asesoria.fecha }} | 
+              <strong>Hora:</strong> {{ asesoria.hora }}<br />
+              <strong>Asesor:</strong> {{ asesoria.nombreAsesor }} | 
+              <strong>Aula:</strong> {{ asesoria.aula }}
+            </div>
+            <div>
+              <button class="confirm-button" @click="confirmAsesoria(asesoria)">Confirmar</button>
+              <button class="delete-button" @click="deleteAsesoria(index)">❌</button>
+            </div>
           </li>
         </ul>
-        <p v-else>No hay asesorías confirmadas.</p>
+      </div>
+
+      <div v-else-if="searchQuery">
+        <p>No se encontraron asesorías.</p>
       </div>
 
       <!-- Calendario -->
@@ -81,7 +110,16 @@
 
 <script>
 import { getAuth } from "firebase/auth";
-import { doc, getDoc, collection, query, getDocs, where } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  setDoc,
+  deleteDoc
+} from "firebase/firestore";
 import { db } from "@/firebase/firebaseConfig";
 
 export default {
@@ -94,7 +132,7 @@ export default {
       calendarUrl: "",
       searchQuery: "",
       asesorias: [],
-      confirmedAsesorias: [] // 🔹 Almacena todas las asesorías confirmadas
+      asesoriasConfirmadas: []
     };
   },
   async mounted() {
@@ -111,12 +149,11 @@ export default {
       if (docSnap.exists()) {
         this.userFullName = `${docSnap.data().nombre} ${docSnap.data().apellidos}`;
       }
-    }
 
-    // Recuperar asesorías confirmadas de localStorage
-    const savedAsesorias = localStorage.getItem("confirmedAsesorias");
-    if (savedAsesorias) {
-      this.confirmedAsesorias = JSON.parse(savedAsesorias);
+      // Cargar asesorías confirmadas desde Firebase
+      const subcolRef = collection(db, "Asesorado", this.userEmail, "asesoriasConfirmadas");
+      const snapshot = await getDocs(subcolRef);
+      this.asesoriasConfirmadas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     }
   },
   methods: {
@@ -144,13 +181,39 @@ export default {
     openGoogleCalendar() {
       window.open(this.calendarUrl, "_blank");
     },
-    confirmAsesoria(asesoria) {
-      this.confirmedAsesorias.push(asesoria);
-      localStorage.setItem("confirmedAsesorias", JSON.stringify(this.confirmedAsesorias));
+    async searchAsesoria() {
+      if (!this.searchQuery) return;
+
+      try {
+        const asesoriasRef = collection(db, "Asesorias");
+        const q = query(
+          asesoriasRef,
+          where("titulo", ">=", this.searchQuery),
+          where("titulo", "<=", this.searchQuery + "\uf8ff")
+        );
+
+        const querySnapshot = await getDocs(q);
+        this.asesorias = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      } catch (error) {
+        console.error("Error buscando asesorías:", error);
+      }
     },
-    eliminarAsesoriaConfirmada(index) {
-      this.confirmedAsesorias.splice(index, 1);
-      localStorage.setItem("confirmedAsesorias", JSON.stringify(this.confirmedAsesorias));
+    deleteAsesoria(index) {
+      this.asesorias.splice(index, 1);
+    },
+    async confirmAsesoria(asesoria) {
+      const yaExiste = this.asesoriasConfirmadas.some(a => a.id === asesoria.id);
+      if (!yaExiste) {
+        this.asesoriasConfirmadas.push(asesoria);
+
+        const subcolRef = doc(db, "Asesorado", this.userEmail, "asesoriasConfirmadas", asesoria.id);
+        await setDoc(subcolRef, asesoria);
+      }
+    },
+    async eliminarAsesoriaConfirmada(id) {
+      this.asesoriasConfirmadas = this.asesoriasConfirmadas.filter(a => a.id !== id);
+      const docRef = doc(db, "Asesorado", this.userEmail, "asesoriasConfirmadas", id);
+      await deleteDoc(docRef);
     }
   }
 };
@@ -210,12 +273,20 @@ export default {
   background-color: #d32f2f;
 }
 
+.confirmed-asesorias-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
 .confirmed-asesoria {
   background-color: #e8f5e9;
   padding: 15px;
   border-radius: 10px;
-  margin-top: 20px;
   border: 1px solid #c8e6c9;
-  text-align: center;
+  width: 300px;
+  text-align: left;
 }
 </style>

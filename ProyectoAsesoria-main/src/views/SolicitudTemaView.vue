@@ -2,13 +2,7 @@
   <div class="menu-container">
     <!-- Header -->
     <header class="header">
-      <img
-        ref="menuIcon"
-        src="@/assets/menu.png"
-        alt="Menú"
-        class="menu-icon"
-        @click="toggleMenu"
-      />
+      <img ref="menuIcon" src="@/assets/menu.png" alt="Menú" class="menu-icon" @click="toggleMenu" />
       <img src="@/assets/logo.png" alt="Logo" class="logo" />
     </header>
 
@@ -62,6 +56,15 @@
           <label class="form-label">Fecha de la asesoría:</label>
           <input v-model="fechaSeleccionada" type="date" class="form-input" />
         </div>
+
+        <div class="input-group">
+          <label class="form-label">Modalidad:</label>
+          <select v-model="modalidad" class="form-select">
+            <option value="">Selecciona modalidad...</option>
+            <option value="Presencial">Presencial</option>
+            <option value="En línea">En línea</option>
+          </select>
+        </div>
       </div>
 
       <div class="button-section">
@@ -83,7 +86,8 @@ export default {
       tema: "",
       urgencia: "",
       hora: "",
-      fechaSeleccionada: ""
+      fechaSeleccionada: "",
+      modalidad: ""
     };
   },
   methods: {
@@ -103,7 +107,7 @@ export default {
       this.$router.push({ name: "MenuAsesorado" });
     },
     async enviarSolicitud() {
-      if (!this.materia || !this.tema || !this.urgencia || !this.hora || !this.fechaSeleccionada) {
+      if (!this.materia || !this.tema || !this.urgencia || !this.hora || !this.fechaSeleccionada || !this.modalidad) {
         alert("Por favor, llena todos los campos.");
         return;
       }
@@ -118,17 +122,18 @@ export default {
           urgencia: this.urgencia,
           hora: this.hora,
           fechaAsesoria: this.fechaSeleccionada,
+          modalidad: this.modalidad,
           fechaSolicitud: new Date().toISOString()
         });
 
         alert("Solicitud enviada correctamente.");
 
-        // Limpiar campos
         this.materia = "";
         this.tema = "";
         this.urgencia = "";
         this.hora = "";
         this.fechaSeleccionada = "";
+        this.modalidad = "";
       } catch (error) {
         console.error("Error al enviar la solicitud:", error);
         alert("Hubo un error al enviar la solicitud.");
@@ -138,7 +143,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .menu-container {
   position: relative;
 }
@@ -226,38 +231,33 @@ export default {
 
 .input-group {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column;
   gap: 10px;
-  margin: 10px;
+  margin-bottom: 15px;
 }
 
-.form-select,
-.form-input {
-  width: 250px;
-  padding: 8px;
-  border: 1px solid #ccc;
+.form-label {
+  font-weight: bold;
+}
+
+.form-input,
+.form-select {
+  width: 100%;
+  padding: 10px;
   border-radius: 5px;
+  border: 1px solid #ccc;
   font-size: 1rem;
-}
-
-.button-section {
-  text-align: center;
-  margin-top: 20px;
-  background-color: #2e2a67;
 }
 
 .send-button {
   background-color: #2e2a67;
   color: white;
-  border: none;
-  border-radius: 10px;
+  border-radius: 5px;
   padding: 10px 20px;
-  font-size: 1rem;
   cursor: pointer;
 }
 
 .send-button:hover {
-  background-color: #d3d3d3;
+  background-color: #1a1a5e;
 }
 </style>

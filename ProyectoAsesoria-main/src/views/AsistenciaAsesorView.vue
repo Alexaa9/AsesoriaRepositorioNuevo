@@ -1,19 +1,12 @@
 <template>
-    <div class="profile-container">
-      
-      <!-- Header -->
-      <header class="header">
-        <img src="@/assets/logo.png" alt="Tecnológico Nacional de México" class="logo" />
-        
-      </header>
-      <header class="header">
-      <img
-        ref="menuIcon"
-        src="@/assets/menu.png"
-        alt="Menú"
-        class="menu-icon"
-        @click="toggleMenu"
-      />
+  <div class="profile-container">
+    <!-- Header -->
+    <header class="header">
+      <img src="@/assets/logo.png" alt="Tecnológico Nacional de México" class="logo" />
+    </header>
+
+    <header class="header">
+      <img ref="menuIcon" src="@/assets/menu.png" alt="Menú" class="menu-icon" @click="toggleMenu" />
       <img src="@/assets/logo.png" alt="Logo" class="logo" />
     </header>
 
@@ -25,51 +18,29 @@
       <button class="dropdown-button" @click="goToComentarios">Comentarios</button>
       <button class="dropdown-button" @click="goToSalir">Salir</button>
     </div>
-  
-      <!-- Tabla de temas asignados -->
-      <section class="topics-section">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Tema</th>
-              <th>Nombre</th>
-              <th># Control</th>
-              <th>Hora</th>
-              <th>Fecha Modalidad</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(tema, index) in temas" :key="index">
-              <td>{{ tema.nombre }}</td>
-              <td>{{ tema.alumno }}</td>
-              <td>{{ tema.numeroControl }}</td>
-              <td>
-                <span :class="tema.hora ? 'icon-check' : 'icon-cross'"></span>
-              </td>
-              <td>
-                <span :class="tema.fechaModalidad ? 'icon-check' : 'icon-cross'"></span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
-    </div>
-  </template>
-  
-  <script>
-  export default {
-    name: "AsistenciaAsesor",
-    data() {
-      return {
-        menuOpen: false,
-        temas: [
-          { nombre: "Matemáticas Avanzadas", alumno: "Juan Pérez", numeroControl: "12345", hora: true, fechaModalidad: false },
-          { nombre: "Física Aplicada", alumno: "Ana García", numeroControl: "67890", hora: true, fechaModalidad: true },
-        ],
-        
-      };
-    },
-    methods: {
+
+    <!-- Sección para crear Google Meet -->
+    <section class="meet-section">
+      <h2>Generar reunión en Google Meet</h2>
+      <button class="meet-button" @click="crearMeet">Crear Meet</button>
+      <input v-model="meetLink" type="text" placeholder="Enlace de Meet" class="meet-input" readonly />
+      <button v-if="meetLink" class="meet-access-button" @click="abrirMeet">Abrir Meet</button>
+    </section>
+  </div>
+</template>
+
+<script>
+import axios from "axios";
+
+export default {
+  name: "AsistenciaAsesor",
+  data() {
+    return {
+      menuOpen: false,
+      meetLink: "" // Para almacenar el enlace de Meet
+    };
+  },
+  methods: {
     toggleMenu() {
       this.menuOpen = !this.menuOpen;
     },
@@ -88,60 +59,85 @@
     goToSalir() {
       this.$router.push({ name: "Inicio" });
     },
-  },
-    
-  };
-  </script>
-  
-  <style>
-  .profile-container {
-    padding: 20px;
+
+    async crearMeet() {
+      try {
+        const response = await axios.post(
+          "https://www.googleapis.com/calendar/v3/calendars/primary/events",
+          {
+            summary: "Reunión en Google Meet",
+            start: { dateTime: new Date().toISOString(), timeZone: "America/Mexico_City" },
+            end: { dateTime: new Date(Date.now() + 3600000).toISOString(), timeZone: "America/Mexico_City" },
+            conferenceData: { createRequest: { requestId: "meeting" } }
+          },
+          {
+            headers: {
+              Authorization: `Bearer TU_TOKEN_DE_ACCESO`
+            }
+          }
+        );
+
+        this.meetLink = response.data.hangoutLink;
+      } catch (error) {
+        console.error("Error al crear la reunión:", error);
+        alert("No se pudo generar la reunión.");
+      }
+    },
+
+    abrirMeet() {
+      window.open(this.meetLink, "_blank");
+    }
   }
-  
-  /* Header */
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #2e2a67;
-    color: white;
-    padding: 20px;
-  }
-  
-  .logo {
-    width: 200px;
-  }
-  
-  .title {
-    font-size: 24px;
-  }
-  
-  /* Tabla */
-  .table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-  }
-  
-  .table th, .table td {
-    border: 1px solid #ccc;
-    padding: 10px;
-    text-align: center;
-  }
-  
-  .icon-check {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    background-color: green;
-    border-radius: 50%;
-  }
-  
-  .icon-cross {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    background-color: red;
-    border-radius: 50%;
-  }
-  </style>
+};
+</script>
+
+<style>
+.profile-container {
+  padding: 20px;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #2e2a67;
+  color: white;
+  padding: 20px;
+}
+
+.logo {
+  width: 200px;
+}
+
+/* Sección de Meet */
+.meet-section {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.meet-button {
+  background-color: #2e2a67;
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  margin-top: 10px;
+}
+
+.meet-input {
+  padding: 10px;
+  width: 300px;
+  margin-top: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.meet-access-button {
+  background-color: green;
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  margin-top: 10px;
+}
+</style>

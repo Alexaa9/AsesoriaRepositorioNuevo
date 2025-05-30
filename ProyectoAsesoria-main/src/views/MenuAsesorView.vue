@@ -1,8 +1,8 @@
 <template>
   <div class="menu-container">
-    <!-- Header -->
+    <!-- Encabezado -->
     <header class="header">
-      <img ref="menuIcon" src="@/assets/menu.png" alt="Menú" class="menu-icon" @click="toggleMenu"/>
+      <img ref="menuIcon" src="@/assets/menu.png" alt="Menú" class="menu-icon" @click="toggleMenu" />
       <img src="@/assets/logo.png" alt="Logo" class="logo" />
     </header>
 
@@ -17,15 +17,17 @@
     <!-- Contenido principal -->
     <div class="content-container">
       <div class="horizontal-section">
-        <div class="profile-container">
-          <button class="profile-button" @click="goToPerfil">
-            <img src="@/assets/asesorado.png" alt="Perfil" class="profile-icon" />
-          </button>
-          <p class="profile-name">Nombre completo</p>
-        </div>
+        <div class="top-icons">
+          <div class="profile-container">
+            <button class="profile-button" @click="goToPerfil">
+              <img src="@/assets/asesorado.png" alt="Perfil" class="profile-icon" />
+            </button>
+            <p class="profile-name">{{ nombreAsesor }}</p>
+          </div>
 
-        <div class="icons-container">
-          <p class="bold-text" style="text-align: center;">Mis Asesorías</p>
+          <div class="mis-asesorias-container">
+            <p class="bold-text">Mis Asesorías</p>
+          </div>
 
           <div class="notification-container">
             <button class="notification-button" @click="goToNoti">
@@ -39,60 +41,122 @@
       <!-- Formulario de asesoría -->
       <div class="asesoria-container">
         <p class="bold-text">Crear Nueva Asesoría</p>
-        <input v-model="nuevaAsesoria.titulo" type="text" placeholder="Título de la asesoría" class="asesoria-input"/>
-        <input v-model="nuevaAsesoria.fecha" type="date" class="asesoria-input"/>
-        <input v-model="nuevaAsesoria.hora" type="time" class="asesoria-input"/>  <!-- 🔹 Campo de hora agregado -->
+
+        <!-- Nombre del asesor (readonly) -->
+        <input
+          v-model="nombreAsesor"
+          type="text"
+          readonly
+          placeholder="Nombre del Asesor"
+          class="asesoria-input bg-gray-100"
+        />
+
+        <input v-model="nuevaAsesoria.titulo" type="text" placeholder="Título de la asesoría" class="asesoria-input" />
+        <input v-model="nuevaAsesoria.descripcion" type="text" placeholder="Descripción" class="asesoria-input" />
+        <input v-model="nuevaAsesoria.aula" type="text" placeholder="Aula" class="asesoria-input" />
+        <input v-model="nuevaAsesoria.fecha" type="date" class="asesoria-input" />
+        <input v-model="nuevaAsesoria.hora" type="time" class="asesoria-input" />
+
+        <!-- Modalidad -->
+        <div class="modalidad-container">
+          <label for="modalidad" class="asesoria-label">Modalidad:</label>
+          <select v-model="nuevaAsesoria.modalidad" id="modalidad" class="asesoria-input">
+            <option value="virtual">Virtual</option>
+            <option value="presencial">Presencial</option>
+          </select>
+        </div>
+
+         <!-- Campo para link de Google Meet si modalidad es virtual -->
+      <div v-if="nuevaAsesoria.modalidad === 'virtual'">
+        <input
+          v-model="nuevaAsesoria.meetLink"
+          type="url"
+          placeholder="Link de Google Meet"
+          class="asesoria-input"
+        />
+      </div>
+
         <button @click="guardarAsesoria" class="asesoria-button">Guardar</button>
       </div>
 
       <!-- Lista de asesorías -->
       <div class="asesoria-list">
         <p class="bold-text">Mis Asesorías</p>
-        <ul>
-          <li v-for="asesoria in asesorias" :key="asesoria.id">
-            {{ asesoria.titulo }} - {{ asesoria.fecha }} - {{ asesoria.hora }}
-          </li>
-        </ul>
+        <div class="asesoria-horizontal-list">
+          <div class="asesoria-card" v-for="asesoria in asesorias" :key="asesoria.id">
+            <strong>{{ asesoria.titulo }}</strong><br />
+            {{ asesoria.descripcion }}<br />
+            Aula: {{ asesoria.aula }}<br />
+            Fecha: {{ asesoria.fecha }}<br />
+            Hora: {{ asesoria.hora }}<br />
+            Modalidad: {{ asesoria.modalidad }}<br />
+              <span v-if="asesoria.modalidad === 'virtual'">Enlace Meet: <a :href="asesoria.meetLink" target="_blank">{{ asesoria.meetLink }}</a></span><br />
+            Asesor: {{ asesoria.nombreAsesor }}
+            <button @click="eliminarAsesoria(asesoria.id)" class="delete-button">Eliminar</button>
+          </div>
+        </div>
       </div>
 
-      <!-- Calendario de Google con botón para abrir -->
+      <!-- Google Calendar -->
       <div class="calendar-container">
         <iframe 
-          src="https://calendar.google.com/calendar/embed?src=al22760556@ite.edu.mx&ctz=America/Mexico_City"
+          :src="calendarUrl"
           style="border: 0"
           width="800"
           height="600"
           frameborder="0"
           scrolling="no">
         </iframe>
-
-        <button @click="openGoogleCalendar" class="access-button">
-          Abrir Google Calendar
-        </button>
+        <button @click="openGoogleCalendar" class="access-button">Abrir Google Calendar</button>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { getFirestore, collection, addDoc, getDocs } from "firebase/firestore";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc,
+  getDoc,
+  setDoc
+} from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 export default {
   name: "MenuAsesorView",
   data() {
     return {
       menuOpen: false,
+      nombreAsesor: "",
+      calendarUrl: "",
       nuevaAsesoria: {
         titulo: "",
+        descripcion: "",
+        aula: "",
         fecha: "",
-        hora: ""  // 🔹 Nuevo campo para la hora
+        hora: "",
+        modalidad: "virtual", // Se añadió la coma faltante
+        meetLink: "" // Campo opcional para la reunión de Google Meet
       },
       asesorias: []
     };
   },
-  mounted() {
-    this.cargarAsesorias();
+
+  async mounted() {
+    const auth = getAuth();
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        await this.cargarDatosAsesor();
+        await this.cargarAsesorias();
+        this.calendarUrl = `https://calendar.google.com/calendar/embed?src=${user.email}&ctz=America/Mexico_City`;
+      }
+    });
   },
+
   methods: {
     toggleMenu() {
       this.menuOpen = !this.menuOpen;
@@ -113,50 +177,101 @@ export default {
       this.$router.push({ name: "Inicio" });
     },
     openGoogleCalendar() {
-      window.open("https://calendar.google.com/calendar/u/0/r", "_blank");
+      window.open(this.calendarUrl, "_blank");
     },
 
     async guardarAsesoria() {
-      if (!this.nuevaAsesoria.titulo || !this.nuevaAsesoria.fecha || !this.nuevaAsesoria.hora) {
-        alert("Por favor, llena todos los campos.");
+      const auth = getAuth();
+      const user = auth.currentUser;
+
+      if (!user) {
+        alert("No estás autenticado.");
         return;
       }
 
-      try {
-        const db = getFirestore();
-        await addDoc(collection(db, "Asesorias"), {
-          titulo: this.nuevaAsesoria.titulo,
-          fecha: this.nuevaAsesoria.fecha,
-          hora: this.nuevaAsesoria.hora  // 🔹 Guarda la hora en Firestore
-        });
+      if (!this.nombreAsesor) {
+        await this.cargarDatosAsesor();
+      }
 
-        alert("Asesoría guardada correctamente en Firestore.");
-        this.nuevaAsesoria.titulo = "";
-        this.nuevaAsesoria.fecha = "";
-        this.nuevaAsesoria.hora = "";
-        this.cargarAsesorias();
+      const db = getFirestore();
+      const asesoriaData = {
+        titulo: this.nuevaAsesoria.titulo,
+        descripcion: this.nuevaAsesoria.descripcion,
+        fecha: this.nuevaAsesoria.fecha,
+        hora: this.nuevaAsesoria.hora,
+        aula: this.nuevaAsesoria.aula,
+        modalidad: this.nuevaAsesoria.modalidad,
+        meetLink: this.nuevaAsesoria.modalidad === "virtual" ? this.nuevaAsesoria.meetLink : "", 
+        nombreAsesor: this.nombreAsesor
+      };
+
+      try {
+        const asesoriasRef = collection(db, "Asesorias");
+        const nuevaAsesoriaDoc = await addDoc(asesoriasRef, asesoriaData);
+        const asesoriaId = nuevaAsesoriaDoc.id;
+
+        const subcoleccionRef = doc(db, "AsesoriasPorAsesor", user.email, "asesorias", asesoriaId);
+        await setDoc(subcoleccionRef, asesoriaData);
+
+        alert("Asesoría guardada correctamente.");
+        this.nuevaAsesoria = { titulo: "", descripcion: "", aula: "", fecha: "", hora: "", modalidad: "virtual", meetLink: "" };
+        await this.cargarAsesorias();
       } catch (error) {
-        console.error("Error al guardar asesoría:", error);
+        console.error("Error al guardar la asesoría:", error);
+        alert("Ocurrió un error al guardar la asesoría.");
       }
     },
 
     async cargarAsesorias() {
-      try {
-        const db = getFirestore();
-        const querySnapshot = await getDocs(collection(db, "Asesorias"));
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (!user) return;
 
-        this.asesorias = [];
-        querySnapshot.forEach((doc) => {
-          this.asesorias.push({ id: doc.id, ...doc.data() });
-        });
-      } catch (error) {
-        console.error("Error al cargar asesorías:", error);
+      const db = getFirestore();
+      const asesoriasRef = collection(db, "AsesoriasPorAsesor", user.email, "asesorias");
+      const querySnapshot = await getDocs(asesoriasRef);
+
+      this.asesorias = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+    },
+
+    async eliminarAsesoria(asesoriaId) {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const db = getFirestore();
+      const docPrincipal = doc(db, "Asesorias", asesoriaId);
+      const docSubcoleccion = doc(db, "AsesoriasPorAsesor", user.email, "asesorias", asesoriaId);
+
+      await deleteDoc(docPrincipal);
+      await deleteDoc(docSubcoleccion);
+
+      this.asesorias = this.asesorias.filter(a => a.id !== asesoriaId);
+    },
+
+    async cargarDatosAsesor() {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const db = getFirestore();
+      const asesorRef = doc(db, "Asesores", user.email);
+      const asesorSnap = await getDoc(asesorRef);
+
+      if (asesorSnap.exists()) {
+        const data = asesorSnap.data();
+        this.nombreAsesor = `${data.nombre} ${data.apellidos}`;
+      } else {
+        console.warn("No se encontró el documento del asesor.");
+        this.nombreAsesor = "Asesor desconocido";
       }
     }
   }
 };
 </script>
-
 
 <style>
 .header {
@@ -176,7 +291,6 @@ export default {
   position: absolute;
   left: 20px;
   width: 30px;
-  height: auto;
   cursor: pointer;
 }
 
@@ -192,21 +306,9 @@ export default {
   top: 100px;
   left: 20px;
   background-color: white;
-  border-radius: 5px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   padding: 10px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
-}
-
-.dropdown-button {
-  width: 150px;
-  padding: 10px;
-  background-color: #2e2a67;
-  color: white;
-  border: none;
-  cursor: pointer;
 }
 
 .content-container {
@@ -216,81 +318,88 @@ export default {
   margin-top: 140px;
 }
 
-.asesoria-container {
+.horizontal-section {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.top-icons {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+
+.profile-container {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-top: 20px;
+  align-items: center;
+}
+
+.profile-icon {
+  width: 40px;
+  height: 40px;
+}
+
+.profile-name {
+  font-size: 14px;
+  font-weight: bold;
+  color: #2e2a67;
+  text-align: center;
+  margin-top: 5px;
+}
+
+.notification-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.notification-button {
+  background-color: white;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
 }
 
 .asesoria-input {
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
+  margin-bottom: 10px;
+  width: 300px;
 }
 
 .asesoria-button {
   background-color: #2e2a67;
   color: white;
   padding: 10px;
-  border: none;
   border-radius: 5px;
-  cursor: pointer;
-}
-
-.asesoria-list {
-  margin-top: 20px;
-}
-.notification-icon {
-    width: 30px; /* Aumenta el tamaño */
-    height: 30px;
-     background: none;
-}
-.notification-button {
-  background: none; /* Elimina cualquier color de fondo */
-  border: none; /* Quita el borde */
-  padding: 5px; /* Ajusta el espaciado */
-}
-.icons-container {
-  display: flex;
-  align-items: center; /* Alinea verticalmente los elementos */
-  justify-content: center; /* Centra horizontalmente */
-  gap: 20px; /* Espacio entre los iconos */
-}
-
-.notification-container {
-  display: flex;
-  flex-direction: column; /* Mantiene la estructura de notificaciones */
-  align-items: center;
-  justify-content: center;
-}
-.profile-container {
-  display: flex;
-  flex-direction: column; /* Mantiene la estructura del perfil */
-  align-items: center;
-}
-.horizontal-section {
-  display: flex;
-  align-items: center; /* Asegura alineación vertical */
-  justify-content: space-between; /* Distribuye los elementos horizontalmente */
-  width: 100%;
-  padding: 5px; /* Reduce el padding para acercarlo más */
-  margin-top: -20px; /* Mueve los elementos hacia arriba */
-}
-
-.profile-container,
-.icons-container {
-  display: flex;
-  align-items: center;
-  gap: 10px; /* Reduce el espacio entre los elementos */
+  margin-top: 10px;
 }
 
 .bold-text {
-    text-align: center; /* Asegura que el texto esté centrado */
-    width: 100%; /* Ocupe todo el ancho disponible */
-    display: block; /* Asegura que el contenedor maneje el centrado */
+  text-align: center;
+  width: 100%;
+  font-weight: bold;
+  margin-top: 20px;
+  margin-bottom: 10px;
 }
 
+.asesoria-horizontal-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 20px;
+}
 
-
+.asesoria-card {
+  background-color: #f2f2f2;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 15px;
+  width: 250px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
 </style>

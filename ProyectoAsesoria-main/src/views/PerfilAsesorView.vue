@@ -1,105 +1,174 @@
 <template>
   <div class="menu-container">
-    <!-- Header -->
+    <!-- Encabezado -->
     <header class="header">
-      <img ref="menuIcon" src="@/assets/menu.png" alt="Menú" class="menu-icon" @click="toggleMenu"/>
+      <img ref="menuIcon" src="@/assets/menu.png" alt="Menú" class="menu-icon" @click="toggleMenu" />
       <img src="@/assets/logo.png" alt="Logo" class="logo" />
     </header>
 
     <!-- Menú desplegable -->
     <div v-show="menuOpen" class="dropdown-menu">
-      <button class="dropdown-button" @click="goToPerfil">Perfil</button>
-      <button class="dropdown-button" @click="goToSoliTema">Solicitud de tema</button>
-      <button class="dropdown-button" @click="goToMenu">Solicitud de asesoría</button>
-      <button class="dropdown-button" @click="goToNoti">Notificaciones</button>
-      <button class="dropdown-button" @click="goToEvaluacion">Evaluación</button>
-      <button class="dropdown-button">Salir</button>
+      <button class="dropdown-button" @click="goToPerfil">Perfil asesor</button>
+      <button class="dropdown-button" @click="goToMenu">Mis asesorías</button>
+      <button class="dropdown-button" @click="goToAsistencias">Asistencias</button>
+      <button class="dropdown-button" @click="goToComentarios">Comentarios</button>
+      <button class="dropdown-button" @click="goToSalir">Salir</button>
     </div>
 
-    <!-- Cuadro de llenado de datos -->
+    <!-- Formulario de datos -->
     <div class="data-box">
       <p class="data-title">Mis datos personales</p>
       <form @submit.prevent="guardarDatos">
-        <label>Nombre:</label>
-        <input type="text" v-model="nombre" required />
-        
         <label>Correo:</label>
-        <input type="email" v-model="correo" required />
-        
-        <label>Matrícula:</label>
-        <input type="text" v-model="matricula" required />
-        
+        <input type="email" v-model="formData.correo" required readonly />
+
+        <label>Nombre:</label>
+        <input type="text" v-model="formData.nombre" required />
+
+        <label>Apellidos:</label>
+        <input type="text" v-model="formData.apellidos" required />
+
+        <label>Profesión:</label>
+        <input type="text" v-model="formData.profesion" required />
+
+        <label>Escuela donde se tituló:</label>
+        <input type="text" v-model="formData.escuela" required />
+
         <button type="submit">Guardar</button>
       </form>
-
-      <!-- Tabla para mostrar datos ingresados -->
-      <table v-if="datos.length">
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Correo</th>
-            <th>Matrícula</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="dato in datos" :key="dato.correo">
-            <td>{{ dato.nombre }}</td>
-            <td>{{ dato.correo }}</td>
-            <td>{{ dato.matricula }}</td>
-          </tr>
-        </tbody>
-      </table>
     </div>
   </div>
 </template>
 
 <script>
+import { getAuth, signOut } from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { db } from "@/firebase/firebaseConfig";
+
 export default {
+  name: "PerfilAsesorView",
   data() {
     return {
       menuOpen: false,
-      nombre: "",
-      correo: "",
-      matricula: "",
-      datos: []
+      formData: {
+        correo: "",
+        nombre: "",
+        apellidos: "",
+        profesion: "",
+        escuela: ""
+      }
     };
+  },
+  async mounted() {
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (user) {
+      this.formData.correo = user.email;
+      const userDocRef = doc(db, "Asesores", user.email);
+      const docSnap = await getDoc(userDocRef);
+
+      if (docSnap.exists()) {
+        this.formData = { ...docSnap.data(), correo: user.email };
+      }
+    }
   },
   methods: {
     toggleMenu() {
       this.menuOpen = !this.menuOpen;
     },
-    guardarDatos() {
-      this.datos.push({
-        nombre: this.nombre,
-        correo: this.correo,
-        matricula: this.matricula
-      });
-      
-      this.nombre = "";
-      this.correo = "";
-      this.matricula = "";
+    async guardarDatos() {
+      try {
+        const userDocRef = doc(db, "Asesores", this.formData.correo);
+        await setDoc(userDocRef, this.formData);
+        alert("Datos guardados correctamente en Firestore.");
+      } catch (error) {
+        console.error("Error al guardar los datos:", error);
+        alert("Hubo un error al guardar los datos.");
+      }
     },
     goToPerfil() {
-      this.$router.push({ name: "PerfilAsesorado" });
-    },
-    goToNoti() {
-      this.$router.push({ name: "NotiAsesorado" });
-    },
-    goToSoliTema() {
-      this.$router.push({ name: "SolicitudTema" });
-    },
-    goToEvaluacion() {
-      this.$router.push({ name: "Evaluacion" });
+      this.$router.push({ name: "PerfilAsesor" });
     },
     goToMenu() {
-      this.$router.push({ name: "MenuAsesorado" });
+      this.$router.push({ name: "MenuAsesor" });
     },
+    goToAsistencias() {
+      this.$router.push({ name: "Asistencias" });
+    },
+    goToComentarios() {
+      this.$router.push({ name: "ComentariosAsesor" });
+    },
+    goToSalir() {
+      const auth = getAuth();
+      signOut(auth)
+        .then(() => {
+          this.$router.push({ name: "Login" });
+        })
+        .catch((error) => {
+          console.error("Error al cerrar sesión:", error);
+        });
+    }
   }
 };
 </script>
 
-<style>
-/* Estilos generales */
+<style scoped>
+.menu-container {
+  position: relative;
+}
+
+.header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background-color: #2e2a67;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+  z-index: 100;
+  padding: 0 20px;
+}
+
+.menu-icon {
+  position: absolute;
+  left: 20px;
+  width: 30px;
+  cursor: pointer;
+}
+
+.logo {
+  height: 60px;
+}
+
+.dropdown-menu {
+  position: fixed;
+  top: 100px;
+  left: 20px;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdown-button {
+  width: 100%;
+  background-color: #2e2a67;
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.dropdown-button:hover {
+  background-color: #1a1a5e;
+}
+
 .data-box {
   background-color: #f5f5f5;
   border: 1px solid #ccc;
@@ -107,13 +176,21 @@ export default {
   padding: 20px;
   text-align: center;
   max-width: 500px;
-  margin: 20px auto;
+  margin: 120px auto 40px;
+}
+
+.data-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #2e2a67;
+  margin-bottom: 20px;
 }
 
 label {
   display: block;
   margin-top: 10px;
   font-weight: bold;
+  text-align: left;
 }
 
 input {
@@ -124,29 +201,18 @@ input {
   border-radius: 5px;
 }
 
-button {
-  margin-top: 10px;
+button[type="submit"] {
+  margin-top: 15px;
   background-color: #2e2a67;
   color: white;
   border: none;
   padding: 10px;
   cursor: pointer;
   width: 100%;
+  font-weight: bold;
 }
 
-button:hover {
+button[type="submit"]:hover {
   background-color: #1a1a5e;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-}
-
-th, td {
-  border: 1px solid #ccc;
-  padding: 10px;
-  text-align: center;
 }
 </style>
