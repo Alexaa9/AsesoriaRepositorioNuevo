@@ -33,7 +33,7 @@ El proyecto está desarrollado con enfoque en **microservicios** y una interfaz 
 Antes de instalar el sistema, asegúrate de contar con lo siguiente:  
 
 - [Node.js](https://nodejs.org/) con npm instalados  
-- [Firebase](https://console.firebase.google.com/u/0/?hl=es-419&fb_gclid=Cj0KCQiAgdC6BhCgARIsAPWNWH1pCso4w4UZB0ryM5azcw9KTSnRFO6ZAyZTKcTZkSsmEYsym4j3ExkaAuOKEALw_wcB) como gestor de base de datos  
+- [Sql](https://www.microsoft.com/es-mx/sql-server/sql-server-downloads) como gestor de base de datos  
 - [Visual Studio Code](https://code.visualstudio.com/) como editor (opcional)
 - [Vue.js](https://vuejs.org/guide/quick-start.html) como Framework 
 - Conexión a internet para uso de APIs de Google (Meet, Gmail, etc.)  
@@ -53,11 +53,19 @@ npm run serve <br>
 App running at:
   - Local:   http://localhost:8080/
 npm install bulma <br>
-npm install firebase <br>
 
 
 ---
 
 ## 👥 Integrantes del Proyecto
 👤 Alexa Espinoza Murillo <br>
+
 👤 Carlos Daniel López Vega <br>
+
+
+
+---
+
+📄 **Documentación del Proyecto:** [Accede aquí](https://docs.google.com/document/d/1jm7XVzMNtXdvODL4rA-e8vWEbzKD7CJ24IId1VVeDOU/edit?usp=sharing)  
+
+
