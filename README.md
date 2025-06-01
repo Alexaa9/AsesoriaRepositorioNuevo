@@ -7,59 +7,54 @@ Cada sección está pensada para que el usuario interactúe de forma intuitiva c
 
 ---
 
-## 📁 Estructura del Proyecto (ProyectoAsesorias-main)
-📁 ProyectoAsesorias-main
+ProyectoAsesorias-main/
 │
-├── 📁 backend                # Lógica del servidor y autenticación
-│   ├── ⚙️ .env               # Variables de entorno
-│   ├── 📄 credenciales.js    # Configuración de credenciales
+├── backend/                 # Lógica del servidor y autenticación  
+│   ├── .env                 # Variables de entorno  
+│   ├── credenciales.js      # Configuración de credenciales  
 │
-├── 📁 public                 # Archivos estáticos públicos
+├── public/                  # Archivos estáticos públicos  
 │
-├── 📁 src                    # Código fuente del frontend
-│   ├── 📁 api                # Módulos de interacción con APIs
-│   │   ├── 📄 authorize.js   # Autenticación con Firebase y Google
-│   │   ├── 📄 calendar.js    # Integración con Google Calendar
+├── src/                     # Código fuente del frontend  
+│   ├── api/                 # Módulos de interacción con APIs  
+│   │   ├── authorize.js     # Autenticación con Firebase y Google  
+│   │   ├── calendar.js      # Integración con Google Calendar  
 │   │
-│   ├── 📁 assets             # Recursos estáticos (imágenes, logos, etc.)
-│   │   ├── 🌅 asesorado.png  # Imagen de asesorado
-│   │   ├── 🌅 buscador.png   # Imagen del buscador
-│   │   ├── 🌅 enviar.png     # Icono de enviar
-│   │   ├── 🌅 logo.png       # Logo de la aplicación
-│   │   ├── 🌅 menu.png       # Imagen del menú
-│   │   ├── 🌅 notificacion.png # Imagen de notificación
+│   ├── assets/              # Recursos estáticos (imágenes, logos, etc.)  
+│   │   ├── asesorado.png    # Imagen de asesorado  
+│   │   ├── buscador.png     # Imagen del buscador  
+│   │   ├── enviar.png       # Icono de enviar  
+│   │   ├── logo.png         # Logo de la aplicación  
+│   │   ├── menu.png         # Imagen del menú  
+│   │   ├── notificacion.png # Imagen de notificación  
 │   │
-│   ├── 📁 firebase           # Integración con Firebase
-│   │   ├── 📄 auth.js        # Autenticación de Firebase
-│   │   ├── 📄 firebaseConfig.js # Configuración de Firebase
-│   │   ├── 📄 firestore.js   # Interacción con Firestore
+│   ├── firebase/            # Integración con Firebase  
+│   │   ├── auth.js         # Autenticación de Firebase  
+│   │   ├── firebaseConfig.js # Configuración de Firebase  
+│   │   ├── firestore.js    # Interacción con Firestore  
 │   │
-│   ├── 📁 views              # Componentes de las vistas
-│   │   ├── 📄 InicioView.vue   # Vista de inicio
-│   │   ├── 📄 PerfilAsesorView.vue # Vista de perfil del asesor
-│   │   ├── 📄 PerfilAsesoradoView.vue # Vista de perfil del asesorado
-│   │   ├── 📄 ComentariosAsesorView.vue # Vista de comentarios del asesor
-│   │   ├── 📄 AsistenciaAsesorView.vue # Vista de asistencia
-│   │   ├── 📄 EvaluacionView.vue # Vista de evaluación
-│   │   ├── 📄 MenuAdminView.vue # Vista del menú del administrador
-│   │   ├── 📄 MenuAsesoradoView.vue # Vista del menú del asesorado
-│   │   ├── 📄 MenuAsesorView.vue # Vista del menú del asesor
-│   │   ├── 📄 SolicitudTemaView.vue # Vista de solicitudes de tema
-│   │   ├── 📄 RecuperarAsesoradoView.vue # Vista para recuperar asesorado
-│   │   ├── 📄 RecuperarAsesorView.vue # Vista para recuperar asesor
+│   ├── views/               # Componentes de las vistas  
+│   │   ├── InicioView.vue   # Vista de inicio  
+│   │   ├── PerfilAsesorView.vue # Vista de perfil del asesor  
+│   │   ├── PerfilAsesoradoView.vue # Vista de perfil del asesorado  
+│   │   ├── ComentariosAsesorView.vue # Vista de comentarios del asesor  
+│   │   ├── AsistenciaAsesorView.vue # Vista de asistencia  
+│   │   ├── EvaluacionView.vue # Vista de evaluación  
+│   │   ├── MenuAdminView.vue # Vista del menú del administrador  
+│   │   ├── MenuAsesoradoView.vue # Vista del menú del asesorado  
+│   │   ├── MenuAsesorView.vue # Vista del menú del asesor  
+│   │   ├── SolicitudTemaView.vue # Vista de solicitudes de tema  
+│   │   ├── RecuperarAsesoradoView.vue # Vista para recuperar asesorado  
+│   │   ├── RecuperarAsesorView.vue # Vista para recuperar asesor  
 │
-│   ├── 📄 App.vue             # Componente raíz de la aplicación
-│   ├── 📄 main.js             # Entrada principal de la aplicación
-│   ├── 📄 .gitignore          # Archivos ignorados por git
-│   ├── 📄 package.json        # Dependencias y scripts
-│   ├── 📄 vue.config.js       # Configuración de Vue
+├── App.vue                  # Componente raíz de la aplicación  
+├── main.js                  # Entrada principal de la aplicación  
+├── .gitignore               # Archivos ignorados por git  
+├── package.json             # Dependencias y scripts  
+├── vue.config.js            # Configuración de Vue  
 │
-└── 📁 node_modules            # Dependencias del proyecto
+└── node_modules/            # Dependencias del proyecto  
 
-
-
-
----
 
 ## ✅ Pre-requisitos de Instalación  
 
