@@ -26,14 +26,13 @@
 </template>
 
 <script>
-import { getFirestore, doc, getDoc, deleteDoc, collection, getDocs } from "firebase/firestore";
-import { getAuth, deleteUser } from "firebase/auth";
+import { getFirestore, collection, query, where, getDocs, deleteDoc } from "firebase/firestore";
 
 export default {
   data() {
     return {
       menuOpen: false,
-      correoAlumno: "", // Campo para capturar el correo
+      correoAlumno: ""
     };
   },
 
@@ -45,66 +44,171 @@ export default {
       this.$router.push({ name: "BajaAsesor" });
     },
     goToNoti() {
-        this.$router.push({ name: "MenuAdmin" });
-      },
-      goToMenuAdmin() {
-        this.$router.push({ name: "MenuAdmin" });
-      },
+      this.$router.push({ name: "MenuAdmin" });
+    },
+    goToMenuAdmin() {
+      this.$router.push({ name: "MenuAdmin" });
+    },
     goToSalir() {
       this.$router.push({ name: "Inicio" });
     },
-    
 
     async eliminarAlumno() {
-      if (!this.correoAlumno) {
+      if (!this.correoAlumno.trim()) {
         alert("Por favor, ingresa un correo válido.");
         return;
       }
 
       const db = getFirestore();
-      const auth = getAuth();
+      const asesoradoRef = collection(db, "Asesorado");
 
       try {
-        // **1️⃣ Buscar el usuario en Firestore y obtener su UID**
-        const alumnoRef = doc(db, "Asesorado", this.correoAlumno);
-        const alumnoSnap = await getDoc(alumnoRef);
+        // 🔍 **Busca el alumno por su correo**
+        const q = query(asesoradoRef, where("correo", "==", this.correoAlumno.trim()));
+        const querySnapshot = await getDocs(q);
 
-        if (!alumnoSnap.exists()) {
+        if (querySnapshot.empty) {
           alert("No se encontraron datos para este alumno.");
           return;
         }
 
-        const uid = alumnoSnap.data().uid; // Obtener UID antes de eliminar
-        await deleteDoc(alumnoRef);
-        console.log("✅ Datos del alumno eliminados de Firestore.");
-
-        // **2️⃣ Eliminar todas sus asesorías confirmadas**
-        const asesoriasRef = collection(db, "Asesorado", this.correoAlumno, "asesoriasConfirmadas");
-        const asesoriasSnap = await getDocs(asesoriasRef);
-        asesoriasSnap.forEach(async (docSnapshot) => {
-          await deleteDoc(doc(db, "Asesorado", this.correoAlumno, "asesoriasConfirmadas", docSnapshot.id));
+        // 🗑 **Eliminar el documento**
+        querySnapshot.forEach(async (docSnapshot) => {
+          await deleteDoc(docSnapshot.ref);
         });
-        console.log("✅ Asesorías confirmadas eliminadas.");
 
-        // **3️⃣ Obtener usuario en Firebase Authentication y eliminarlo**
-        const user = auth.currentUser;
-        if (user && user.uid === uid) {
-          await deleteUser(user);
-          console.log("✅ Usuario eliminado de Firebase Authentication.");
-        } else {
-          console.warn("⚠ No se encontró el usuario en Firebase Authentication.");
-        }
-
+        console.log("✅ Alumno eliminado de Firestore.");
         alert("✅ El alumno ha sido eliminado correctamente.");
-        this.correoAlumno = ""; // Limpiar el campo después de eliminar
+        this.correoAlumno = ""; // Limpia el input
+
       } catch (error) {
         console.error("❌ Error al eliminar el usuario:", error);
         alert("Hubo un problema al eliminar el usuario.");
       }
-    },
-  },
+    }
+  }
 };
 </script>
+
+<style>
+.header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background-color: #2e2a67;
+  display: flex;
+  align-items: center;
+  padding-left: 20px;
+  height: 100px;
+  z-index: 10;
+}
+
+.logo {
+  max-height: 80px;
+}
+
+.icon-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 140px;
+}
+
+.bold-text {
+  font-weight: bold;
+  font-size: 1.5rem;
+  color: #0a0a0a;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px auto;
+}
+
+.form-label {
+  font-size: 1rem;
+  font-weight: bold;
+  color: black;
+}
+
+.form-input {
+  width: 80%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.crear-cuenta-button {
+  background-color: #d9534f;
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+</style>
+
+<style>
+.header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background-color: #2e2a67;
+  display: flex;
+  align-items: center;
+  padding-left: 20px;
+  height: 100px;
+  z-index: 10;
+}
+
+.logo {
+  max-height: 80px;
+}
+
+.icon-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 140px;
+}
+
+.bold-text {
+  font-weight: bold;
+  font-size: 1.5rem;
+  color: #0a0a0a;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px auto;
+}
+
+.form-label {
+  font-size: 1rem;
+  font-weight: bold;
+  color: black;
+}
+
+.form-input {
+  width: 80%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.crear-cuenta-button {
+  background-color: #d9534f;
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+</style>
 
 <style>
 .header {
