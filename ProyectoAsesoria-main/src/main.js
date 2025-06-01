@@ -18,7 +18,6 @@ import MenuAsesorView from './views/MenuAsesorView.vue';
 import PerfilAsesorView from './views/PerfilAsesorView.vue';
 import SolicitudTemaAsesorView from './views/SolicitudTemaAsesorView.vue';
 import NotiAsesorView from './views/NotiAsesorView.vue';
-import AsistenciaAsesorView from './views/AsistenciaAsesorView.vue';
 import ComentariosAsesorView from './views/ComentariosAsesorView.vue';
 import MenuAdminView from './views/MenuAdminView.vue';
 import LoginAdminView from './views/LoginAdminView.vue';
@@ -109,11 +108,7 @@ const routes = [
     name: 'NotiAsesor',
     component: NotiAsesorView,
   },
-  {
-    path: '/asistencia-Asesor',
-    name: 'AsistenciaAsesor',
-    component: AsistenciaAsesorView,
-  },
+  
   {
     path: '/comentarios-Asesor',
     name: 'ComentariosAsesor',

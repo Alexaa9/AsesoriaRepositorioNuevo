@@ -1,31 +1,26 @@
 <template>
   <div class="menu-container">
-    <!-- Encabezado -->
     <header class="header">
       <img ref="menuIcon" src="@/assets/menu.png" alt="Menú" class="menu-icon" @click="toggleMenu" />
       <img src="@/assets/logo.png" alt="Logo" class="logo" />
     </header>
 
-    <!-- Menú desplegable -->
     <div v-show="menuOpen" class="dropdown-menu">
       <button class="dropdown-button" @click="goToPerfil">Perfil</button>
       <button class="dropdown-button" @click="goToSoliTema">Solicitud de tema</button>
       <button class="dropdown-button" @click="goToMenu">Búsqueda de Asesorías</button>
-      <button class="dropdown-button">Notificaciones</button>
       <button class="dropdown-button" @click="goToEvaluacion">Evaluación</button>
-      <button class="dropdown-button">Salir</button>
+      <button class="dropdown-button" @click="goToSalir">Salir</button>
     </div>
 
-    <!-- Contenido principal -->
     <div class="content-container">
       <div class="text-section">
         <p class="bold-text">Notificaciones</p>
       </div>
 
-      <!-- Selección de asesor -->
       <div class="select-asesor-container">
         <h3>Selecciona un Asesor</h3>
-        <select v-model="destinatarioCorreo" @change="cargarMensajes">
+        <select v-model="destinatarioCorreo" @change="() => { cargarMensajes(); cargarObservaciones(); }">
           <option disabled value="">-- Selecciona un asesor --</option>
           <option v-for="asesor in asesores" :key="asesor.correo" :value="asesor.correo">
             {{ asesor.nombre }} ({{ asesor.correo }})
@@ -33,7 +28,6 @@
         </select>
       </div>
 
-      <!-- Sección de Mensajería -->
       <div class="mensajeria-container" v-if="destinatarioCorreo">
         <h3>Chat con Asesor</h3>
         <div class="messages">
@@ -49,7 +43,19 @@
         <button @click="enviarMensaje">Enviar</button>
       </div>
 
-      <!-- Sección de Notificaciones del Chat -->
+      <!-- Nueva sección para Observaciones debajo del chat -->
+      <div class="observaciones-container" v-if="observaciones.length > 0">
+        <h3>Observaciones del Asesor</h3>
+        <ul>
+          <li v-for="obs in observaciones" :key="obs.fecha">
+            <strong>Modalidad:</strong> {{ obs.modalidad }} <br />
+            <strong>Asesor:</strong> {{ obs.asesor }} <br />
+            <strong>Título:</strong> {{ obs.titulo }} <br />
+            <strong>Fecha:</strong> {{ new Date(obs.fecha.seconds * 1000).toLocaleDateString() }}
+          </li>
+        </ul>
+      </div>
+
       <div class="notificaciones-container">
         <h3>Historial de Notificaciones</h3>
         <div v-if="notificaciones.length">
@@ -78,7 +84,7 @@ import {
   query,
   orderBy,
 } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
+import { getAuth, signOut } from "firebase/auth";
 
 export default {
   name: "NotiAsesoradoView",
@@ -92,6 +98,7 @@ export default {
       destinatarioCorreo: "",
       asesores: [],
       notificaciones: [],
+      observaciones: [], // Para almacenar las observaciones
     };
   },
 
@@ -99,6 +106,10 @@ export default {
     await this.obtenerDatosAsesorado();
     await this.obtenerAsesores();
     await this.cargarNotificaciones();
+
+    if (this.destinatarioCorreo) {
+      await this.cargarObservaciones();
+    }
   },
 
   methods: {
@@ -114,18 +125,30 @@ export default {
     goToEvaluacion() {
       this.$router.push({ name: "Evaluacion" });
     },
+    goToNoti() {
+      this.$router.push({ name: "NotiAsesorado" });
+    },
     goToMenu() {
       this.$router.push({ name: "MenuAsesorado" });
     },
+    goToSalir() {
+      const auth = getAuth();
+      signOut(auth)
+        .then(() => {
+          this.$router.push({ name: "Inicio" });
+        })
+        .catch((error) => {
+          console.error("Error al cerrar sesión:", error);
+        });
+    },
 
-    // Obtener los datos del asesorado
     async obtenerDatosAsesorado() {
       const auth = getAuth();
       const user = auth.currentUser;
       if (user) {
         this.usuarioCorreo = user.email;
         const db = getFirestore();
-        const asesoradoRef = doc(db, "Asesorado", user.email);
+        const asesoradoRef = doc(db, "Asesorados", user.email);
         const snapshot = await getDoc(asesoradoRef);
         if (snapshot.exists()) {
           this.usuarioNombre = snapshot.data().nombre;
@@ -133,7 +156,6 @@ export default {
       }
     },
 
-    // Obtener los asesores disponibles
     async obtenerAsesores() {
       const db = getFirestore();
       const asesoresRef = collection(db, "Asesores");
@@ -143,52 +165,18 @@ export default {
         nombre: doc.data().nombre
       }));
 
-      // Seleccionamos el primer asesor por defecto
       if (this.asesores.length > 0) {
         this.destinatarioCorreo = this.asesores[0].correo;
         this.cargarMensajes();
+        this.cargarObservaciones();
       }
     },
 
-    // Enviar un mensaje
-    async enviarMensaje() {
-      if (!this.nuevoMensaje.trim() || !this.destinatarioCorreo) return;
-
-      const db = getFirestore();
-
-      // Asegurarnos de que el correo del asesorado está correctamente en el estado
-      const remitenteCorreo = this.usuarioCorreo;
-      const remitenteNombre = this.usuarioNombre;
-
-      // Guardar el mensaje en la colección "Mensajes"
-      await addDoc(collection(db, "Mensajes"), {
-        remitenteCorreo: remitenteCorreo, // El correo del asesorado
-        remitenteNombre: remitenteNombre,
-        destinatarioCorreo: this.destinatarioCorreo,
-        mensaje: this.nuevoMensaje,
-        timestamp: serverTimestamp(),
-      });
-
-      // Guardar la notificación en la subcolección "Notificaciones" del asesor
-      await addDoc(collection(db, "Asesores", this.destinatarioCorreo, "Notificaciones"), {
-        tipo: "Mensaje nuevo",
-        contenido: this.nuevoMensaje,
-        remitenteCorreo: remitenteCorreo, // El correo del asesorado
-        remitenteNombre: remitenteNombre,
-        timestamp: serverTimestamp(),
-      });
-
-      // Limpiar el campo de mensaje después de enviarlo
-      this.nuevoMensaje = "";
-    },
-
-    // Cargar los mensajes entre el asesorado y el asesor seleccionado
     async cargarMensajes() {
       if (!this.destinatarioCorreo) return;
 
       const db = getFirestore();
       const mensajesRef = collection(db, "Mensajes");
-
       const q = query(mensajesRef, orderBy("timestamp", "asc"));
 
       onSnapshot(q, (snapshot) => {
@@ -201,20 +189,66 @@ export default {
       });
     },
 
-    // Cargar las notificaciones del asesorado
     async cargarNotificaciones() {
       const db = getFirestore();
-      const notiRef = collection(db, "Asesores", this.usuarioCorreo, "Notificaciones");
+      const notiRef = collection(db, "Asesorado", this.usuarioCorreo, "Notificaciones");
+
       onSnapshot(notiRef, (snapshot) => {
         this.notificaciones = snapshot.docs
           .map(doc => doc.data())
           .sort((a, b) => a.timestamp?.seconds - b.timestamp?.seconds);
       });
-    }
+    },
+
+    // Cargar las observaciones desde la subcolección 'Observaciones' del asesorado
+    async cargarObservaciones() {
+      if (!this.destinatarioCorreo || !this.usuarioCorreo) return;
+
+      const db = getFirestore();
+      const obsRef = collection(db, "Asesorado", this.usuarioCorreo, "Observaciones");
+
+      try {
+        const snapshot = await getDocs(obsRef);
+        console.log("Observaciones obtenidas:", snapshot.docs.map(doc => doc.data())); // Agregamos un console.log
+        this.observaciones = snapshot.docs
+          .map(doc => doc.data())
+          .filter(obs => obs.asesor === this.destinatarioCorreo)
+          .sort((a, b) => a.fecha?.seconds - b.fecha?.seconds);
+
+        if (this.observaciones.length === 0) {
+          console.log("No hay observaciones para este asesorado.");
+        }
+      } catch (error) {
+        console.error("Error al cargar las observaciones:", error);
+      }
+    },
+
+    async enviarMensaje() {
+      if (!this.nuevoMensaje.trim() || !this.destinatarioCorreo) return;
+
+      const db = getFirestore();
+
+      await addDoc(collection(db, "Mensajes"), {
+        remitenteCorreo: this.usuarioCorreo,
+        remitenteNombre: this.usuarioNombre,
+        destinatarioCorreo: this.destinatarioCorreo,
+        mensaje: this.nuevoMensaje,
+        timestamp: serverTimestamp(),
+      });
+
+      await addDoc(collection(db, "Asesores", this.destinatarioCorreo, "Notificaciones"), {
+        tipo: "Mensaje nuevo",
+        contenido: this.nuevoMensaje,
+        remitenteCorreo: this.usuarioCorreo,
+        remitenteNombre: this.usuarioNombre,
+        timestamp: serverTimestamp(),
+      });
+
+      this.nuevoMensaje = "";
+    },
   }
 };
 </script>
-
 <style scoped>
 .mensajeria-container {
   background-color: #ffffff;
@@ -224,7 +258,6 @@ export default {
   margin-top: 20px;
   border: 1px solid #ccc;
 }
-
 .messages {
   background-color: #f8f9fa;
   padding: 10px;
@@ -233,35 +266,30 @@ export default {
   max-height: 300px;
   overflow-y: auto;
 }
-
 .messages p {
   padding: 8px;
   border-radius: 8px;
   max-width: 80%;
   margin-bottom: 5px;
 }
-
 .messages .enviado {
   background-color: #2e2a67;
   color: white;
   text-align: right;
   margin-left: auto;
 }
-
 .messages .recibido {
   background-color: #e9ecef;
   color: black;
   text-align: left;
   margin-right: auto;
 }
-
 input {
   width: 100%;
   padding: 10px;
   border-radius: 5px;
   border: 1px solid #ccc;
 }
-
 button {
   background-color: #2e2a67;
   color: white;
@@ -271,11 +299,9 @@ button {
   border-radius: 5px;
   margin-top: 5px;
 }
-
 button:hover {
   background-color: #0056b3;
 }
-
 .notificaciones-container {
   background-color: #ffffff;
   padding: 15px;
@@ -283,8 +309,22 @@ button:hover {
   border: 1px solid #ddd;
   margin-top: 20px;
 }
-
 .select-asesor-container {
   margin-bottom: 20px;
+}
+.observaciones-container {
+  background-color: #fff4e6;
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #f0c36d;
+  margin-top: 20px;
+  width: 80%;
+}
+.observaciones-container ul {
+  list-style-type: disc;
+  padding-left: 20px;
+}
+.observaciones-container li {
+  margin-bottom: 5px;
 }
 </style>

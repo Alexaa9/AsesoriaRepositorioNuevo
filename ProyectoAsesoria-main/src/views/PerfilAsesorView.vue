@@ -8,10 +8,9 @@
 
     <!-- Menú desplegable -->
     <div v-show="menuOpen" class="dropdown-menu">
-      <button class="dropdown-button" @click="goToPerfil">Perfil asesor</button>
       <button class="dropdown-button" @click="goToMenu">Mis asesorías</button>
-      <button class="dropdown-button" @click="goToAsistencias">Asistencias</button>
       <button class="dropdown-button" @click="goToComentarios">Comentarios</button>
+      <button class="dropdown-button" @click="goToNoti">Notificaciones</button>
       <button class="dropdown-button" @click="goToSalir">Salir</button>
     </div>
 
@@ -93,8 +92,8 @@ export default {
     goToMenu() {
       this.$router.push({ name: "MenuAsesor" });
     },
-    goToAsistencias() {
-      this.$router.push({ name: "Asistencias" });
+    goToNoti() {
+      this.$router.push({ name: "NotiAsesor" });
     },
     goToComentarios() {
       this.$router.push({ name: "ComentariosAsesor" });
@@ -103,7 +102,7 @@ export default {
       const auth = getAuth();
       signOut(auth)
         .then(() => {
-          this.$router.push({ name: "Login" });
+          this.$router.push({ name: "Inicio" });
         })
         .catch((error) => {
           console.error("Error al cerrar sesión:", error);

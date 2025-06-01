@@ -9,7 +9,6 @@
     <!-- Menú desplegable -->
     <div v-show="menuOpen" class="dropdown-menu">
       <button class="dropdown-button" @click="goToSoliTema">Solicitud de tema</button>
-      <button class="dropdown-button" @click="goToMenu">Búsqueda de Asesorías</button>
       <button class="dropdown-button" @click="goToNoti">Notificaciones</button>
       <button class="dropdown-button" @click="goToEvaluacion">Evaluación</button>
       <button class="dropdown-button" @click="goToSalir">Salir</button>
@@ -109,7 +108,8 @@
 </template>
 
 <script>
-import { getAuth } from "firebase/auth";
+
+import { getAuth, signOut } from "firebase/auth";
 import {
   doc,
   getDoc,
@@ -176,7 +176,14 @@ export default {
       this.$router.push({ name: "SolicitudTema" });
     },
     goToSalir() {
-      this.$router.push({ name: "Inicio" });
+      const auth = getAuth();
+      signOut(auth)
+        .then(() => {
+          this.$router.push({ name: "Inicio" });
+        })
+        .catch((error) => {
+          console.error("Error al cerrar sesión:", error);
+        });
     },
     openGoogleCalendar() {
       window.open(this.calendarUrl, "_blank");

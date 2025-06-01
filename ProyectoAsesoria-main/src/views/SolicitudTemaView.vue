@@ -9,11 +9,10 @@
     <!-- Menú desplegable -->
     <div v-show="menuOpen" class="dropdown-menu">
       <button class="dropdown-button" @click="goToPerfil">Perfil</button>
-      <button class="dropdown-button">Solicitud de tema</button>
       <button class="dropdown-button" @click="goToMenu">Búsqueda de Asesorías</button>
       <button class="dropdown-button" @click="goToNoti">Notificaciones</button>
       <button class="dropdown-button" @click="goToEvaluacion">Evaluación</button>
-      <button class="dropdown-button">Salir</button>
+      <button class="dropdown-button" @click="goToSalir">Salir</button>
     </div>
 
     <!-- Contenido principal -->
@@ -75,6 +74,7 @@
 </template>
 
 <script>
+import { getAuth, signOut } from "firebase/auth"; // ✅ Importación necesaria para cerrar sesion
 import { getFirestore, collection, addDoc } from "firebase/firestore";
 
 export default {
@@ -105,6 +105,16 @@ export default {
     },
     goToMenu() {
       this.$router.push({ name: "MenuAsesorado" });
+    },
+    goToSalir() {
+      const auth = getAuth();
+      signOut(auth)
+        .then(() => {
+          this.$router.push({ name: "Inicio" });
+        })
+        .catch((error) => {
+          console.error("Error al cerrar sesión:", error);
+        });
     },
     async enviarSolicitud() {
       if (!this.materia || !this.tema || !this.urgencia || !this.hora || !this.fechaSeleccionada || !this.modalidad) {

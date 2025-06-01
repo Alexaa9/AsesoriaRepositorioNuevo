@@ -8,7 +8,6 @@
 
     <!-- Menú desplegable -->
     <div v-show="menuOpen" class="dropdown-menu">
-      <button class="dropdown-button" @click="goToPerfil">Perfil</button>
       <button class="dropdown-button" @click="goToSoliTema">Solicitud de tema</button>
       <button class="dropdown-button" @click="goToMenu">Busqueda de asesoría</button>
       <button class="dropdown-button" @click="goToNoti">Notificaciones</button>
@@ -45,7 +44,7 @@
 </template>
 
 <script>
-import { getAuth } from "firebase/auth";
+import { getAuth, signOut } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/firebase/firebaseConfig";
 
@@ -98,6 +97,16 @@ export default {
     },
     goToMenu() {
       this.$router.push({ name: "MenuAsesorado" });
+    },
+     goToSalir() {
+      const auth = getAuth();
+      signOut(auth)
+        .then(() => {
+          this.$router.push({ name: "Inicio" });
+        })
+        .catch((error) => {
+          console.error("Error al cerrar sesión:", error);
+        });
     },
     async guardarDatos() {
       try {

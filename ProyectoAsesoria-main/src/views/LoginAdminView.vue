@@ -6,37 +6,67 @@
       </header>
   
       <div class="icon-container">
-  <img src="@/assets/asesorado.png" alt="asesorado">
-  <p class="bold-text">Administrador</p>
-  </div>
-      <!-- Título principal -->
-      <div class="session-title">
-        <p class="bold-text">Iniciar Sesion</p>
+        <img src="@/assets/asesorado.png" alt="asesorado">
+        <p class="bold-text">Administrador</p>
       </div>
   
-      <!-- Sección de matrícula -->
-      <div class="input-group">
-        <label class="form-label">Correo:</label>
-        <input type="text" class="form-input" placeholder="Escribe tu correo" />
+      <!-- Título principal -->
+      <div class="session-title">
+        <p class="bold-text">Iniciar Sesión</p>
       </div>
   
       <!-- Sección de correo -->
       <div class="input-group">
-        <label class="form-label">Contraseña:</label>
-        <input type="text" class="form-input" placeholder="Escribe tu contraseña" />
+        <label class="form-label">Correo:</label>
+        <input type="text" v-model="correo" class="form-input" placeholder="Escribe tu correo" />
       </div>
   
-    
-      <router-link to="/menu-Admin" class="crear-cuenta-button">Acceder</router-link>
+      <!-- Sección de contraseña -->
+      <div class="input-group">
+        <label class="form-label">Contraseña:</label>
+        <input type="password" v-model="contraseña" class="form-input" placeholder="Escribe tu contraseña" />
+      </div>
   
-
-
+      <button @click="login" class="crear-cuenta-button">Acceder</button>
     </div>
-  </template>
-  
-  <style>
-  /* Header */
-  .header {
+</template>
+
+<script>
+import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
+
+export default {
+  data() {
+    return {
+      correo: '',
+      contraseña: ''
+    };
+  },
+  methods: {
+    async login() {
+      const db = getFirestore();
+
+      try {
+        // Consultar Firestore para verificar si el correo y la contraseña coinciden
+        const q = query(collection(db, "administradores"), where("correo", "==", this.correo), where("contraseña", "==", this.contraseña));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          this.$router.push('/menu-Admin'); // Redirigir si el usuario es válido
+        } else {
+          alert('Acceso denegado. Credenciales incorrectas.');
+        }
+      } catch (error) {
+        console.error('Error al iniciar sesión:', error);
+        alert('Hubo un problema al conectar con la base de datos.');
+      }
+    }
+  }
+};
+</script>
+
+<style>
+/* Header */
+.header {
   position: fixed;
   top: 0;
   width: 100%;
@@ -46,66 +76,61 @@
   align-items: center;
   padding-left: 20px;
   height: 100px;
-  z-index: 100; /* Asegura que el header esté sobre otros elementos */
+  z-index: 100;
 }
-  
-  .logo {
-    max-height: 80px;
-    height: auto;
-  }
-  
-  /* Título principal */
-  
-  
-  .bold-text {
-    font-weight: bold;
-    font-size: 1.5rem;
-    color: #0a0a0a;
-    margin: 0;
-  }
-  
-  /* Grupo de entrada */
-  .input-group {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 20px auto;
-    max-width: 400px;
-    padding: 5px;
-  }
-  
-  .form-label {
-    font-size: 1rem;
-    color: black;
-    font-weight: bold;
-    width: 30%;
-    text-align: left;
-  }
-  
-  .form-input {
-    width: 65%;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  }
-  .icon-container {
+
+.logo {
+  max-height: 80px;
+  height: auto;
+}
+
+.bold-text {
+  font-weight: bold;
+  font-size: 1.5rem;
+  color: #0a0a0a;
+  margin: 0;
+}
+
+.input-group {
   display: flex;
-  flex-direction: column; /* Mantiene imagen y texto en columna */
-  align-items: center; /* Centra horizontalmente */
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px auto;
+  max-width: 400px;
+  padding: 5px;
+}
+
+.form-label {
+  font-size: 1rem;
+  color: black;
+  font-weight: bold;
+  width: 30%;
+  text-align: left;
+}
+
+.form-input {
+  width: 65%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.icon-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  margin-top: 50px; /* Reduce la separación del icono con "Iniciar Sesión" */
-  margin-bottom: 5px; /* Espaciado más compacto */
+  margin-top: 50px;
+  margin-bottom: 5px;
 }
 
 .icon-container img {
-  width: 90px; /* Tamaño más ajustado */
+  width: 90px;
   height: 90px;
-  margin-bottom: 3px; /* Reduce el espacio entre el icono y el texto */
+  margin-bottom: 3px;
 }
+
 .session-title {
-  margin-top: 30px; /* Aumenta la separación entre "Administrador" e "Iniciar Sesión" */
+  margin-top: 30px;
 }
-
-
-  </style>
-  
+</style>

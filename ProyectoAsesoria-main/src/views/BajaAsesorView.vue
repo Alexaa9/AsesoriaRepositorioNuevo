@@ -19,10 +19,9 @@
         v-show="menuOpen"
         class="dropdown-menu"
       >
-        <button class="dropdown-button" @click="goToBajaAsesor">Dar baja asesor</button>
+        <button class="dropdown-button" @click="goToMenuAdmin">Inicio</button>
         <button class="dropdown-button" @click="goToBajaAlumn">Dar de baja Alumno</button>
         <button class="dropdown-button" @click="goToNoti">Notificaciones</button>
-        <button class="dropdown-button" @click="goToEncuestas">Encuestas</button>
         <button class="dropdown-button" @click="goToSalir">Salir</button>
       </div>
   
@@ -76,14 +75,14 @@
       goToBajaAsesor() {
         this.$router.push({ name: "BajaAsesor" });
       },
+      goToMenuAdmin() {
+        this.$router.push({ name: "MenuAdmin" });
+      },
       goToNoti() {
         this.$router.push({ name: "MenuAdmin" });
       },
       goToBajaAlumn() {
         this.$router.push({ name: "BajaAlumno" });
-      },
-      goToEncuestas() {
-        this.$router.push({ name: "EncuestasAdmin" });
       },
       goToSalir() {
         this.$router.push({ name: "Inicio" });

@@ -17,7 +17,6 @@
         <button class="dropdown-button" @click="goToBajaAlumno">Dar de baja Alumno</button>
         <button class="dropdown-button" @click="goToBajaAsesor">Dar de baja Asesor</button>
         <button class="dropdown-button" @click="goToNoti">Notificaciones</button>
-        <button class="dropdown-button" @click="goToEncuestas">Encuestas</button>
         <button class="dropdown-button" @click="goToSalir">Salir</button>
       </div>
   
@@ -60,9 +59,6 @@
       },
       goToNoti() {
         this.$router.push({ name: "MenuAdmin" });
-      },
-      goToEncuestas() {
-        this.$router.push({ name: "EncuestasAdmin" });
       },
       goToSalir() {
         this.$router.push({ name: "Inicio" });

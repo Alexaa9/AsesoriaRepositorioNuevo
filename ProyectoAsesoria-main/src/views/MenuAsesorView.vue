@@ -8,7 +8,7 @@
 
     <!-- Menú desplegable -->
     <div v-show="menuOpen" class="dropdown-menu">
-      <button class="dropdown-button" @click="goToAsistencias">Asistencias</button>
+      <button class="dropdown-button" @click="goToPerfil">Perfil</button>
       <button class="dropdown-button" @click="goToNoti">Notificaciones</button>
       <button class="dropdown-button" @click="goToComentarios">Comentarios</button>
       <button class="dropdown-button" @click="goToSalir">Salir</button>
@@ -124,7 +124,7 @@ import {
   getDoc,
   setDoc
 } from "firebase/firestore";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 
 export default {
   name: "MenuAsesorView",
@@ -167,14 +167,19 @@ export default {
     goToNoti() {
       this.$router.push({ name: "NotiAsesor" });
     },
-    goToAsistencias() {
-      this.$router.push({ name: "AsistenciaAsesor" });
-    },
+    
     goToComentarios() {
       this.$router.push({ name: "ComentariosAsesor" });
     },
-    goToSalir() {
-      this.$router.push({ name: "Inicio" });
+     goToSalir() {
+      const auth = getAuth();
+      signOut(auth)
+        .then(() => {
+          this.$router.push({ name: "Inicio" });
+        })
+        .catch((error) => {
+          console.error("Error al cerrar sesión:", error);
+        });
     },
     openGoogleCalendar() {
       window.open(this.calendarUrl, "_blank");
