@@ -60,12 +60,12 @@ Cada sección está pensada para que el usuario interactúe de forma intuitiva c
 
 Antes de instalar el sistema, asegúrate de contar con lo siguiente:  
 
-- [Node.js](https://nodejs.org/) con npm instalados  
+- [Node.js](https://nodejs.org/) con npm instalados.  
 - [Firebase](https://console.firebase.google.com/project/asesorias-32539/firestore/databases/-default-/data/~2FAsesorado~2Falumna@ite.edu.mx~2Fobservaciones~2Fomxqh9Lh0PFNiJ0SqqNM) como gestor de base de datos en consola llamada asesorias.
-- [Visual Studio Code](https://code.visualstudio.com/) como editor (opcional)
-- [Vue.js](https://vuejs.org/guide/quick-start.html) como Framework
-- [Google Cloud](https://console.cloud.google.com/apis/library/browse?inv=1&invt=Abywwg&project=asesorias-459817) cuenta de Cloud con Credenciales y APIs habilitados.
-- Conexión a internet para uso de APIs de Google (Google Calendar)
+- [Visual Studio Code](https://code.visualstudio.com/) como editor (opcional).
+- [Vue.js](https://vuejs.org/guide/quick-start.html) como Framework.
+- [Google Cloud](https://console.cloud.google.com/apis/library/browse?inv=1&invt=Abywwg&project=asesorias-459817) cuenta de Cloud con Credenciales y APIs habilitados. Deberas obtener IDs de clientes secretos con OAuth 2.0 y tener claves de API. Tambien deberas agregar permisos sensibles.
+- Conexión a internet para uso de APIs de Google (Google Calendar).
 - Conexión a internet para uso de Google Forms.
 - Cuenta de Google para iniciar sesion.
 
@@ -91,7 +91,7 @@ vue create ProyectoAsesoria-main
 _Entra a la carpeta 
 
 ```
-cd mi-proyecto-vue
+cd ProyectoAsesoria-main
 ```
 _Inicia el servidor 
 
