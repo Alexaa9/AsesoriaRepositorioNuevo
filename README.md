@@ -7,20 +7,20 @@ Cada sección está pensada para que el usuario interactúe de forma intuitiva c
 
 ---
 
-ProyectoAsesorias-main/
+# Estructura del ProyectoAsesorias-main/<br>
 │
-├── backend/                 # Lógica del servidor y autenticación  
+├── 📁backend/               # Lógica del servidor y autenticación  
 │   ├── .env                 # Variables de entorno  
 │   ├── credenciales.js      # Configuración de credenciales  
 │
-├── public/                  # Archivos estáticos públicos  
+├── 📁public/                # Archivos estáticos públicos  
 │
-├── src/                     # Código fuente del frontend  
-│   ├── api/                 # Módulos de interacción con APIs  
+├── 📁src/                     # Código fuente del frontend  
+│   ├── 📁api/                 # Módulos de interacción con APIs  
 │   │   ├── authorize.js     # Autenticación con Firebase y Google  
 │   │   ├── calendar.js      # Integración con Google Calendar  
 │   │
-│   ├── assets/              # Recursos estáticos (imágenes, logos, etc.)  
+│   ├── 📁assets/              # Recursos estáticos (imágenes, logos, etc.)  
 │   │   ├── asesorado.png    # Imagen de asesorado  
 │   │   ├── buscador.png     # Imagen del buscador  
 │   │   ├── enviar.png       # Icono de enviar  
@@ -28,12 +28,12 @@ ProyectoAsesorias-main/
 │   │   ├── menu.png         # Imagen del menú  
 │   │   ├── notificacion.png # Imagen de notificación  
 │   │
-│   ├── firebase/            # Integración con Firebase  
+│   ├── 📁firebase/            # Integración con Firebase  
 │   │   ├── auth.js         # Autenticación de Firebase  
 │   │   ├── firebaseConfig.js # Configuración de Firebase  
 │   │   ├── firestore.js    # Interacción con Firestore  
 │   │
-│   ├── views/               # Componentes de las vistas  
+│   ├── 📁views/               # Componentes de las vistas  
 │   │   ├── InicioView.vue   # Vista de inicio  
 │   │   ├── PerfilAsesorView.vue # Vista de perfil del asesor  
 │   │   ├── PerfilAsesoradoView.vue # Vista de perfil del asesorado  
