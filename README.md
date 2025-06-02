@@ -145,7 +145,7 @@ https://github.com/Alexaa9/AsesoriaRepositorioNuevo.git
 
 ---
 
-📄 **Documentación del Proyecto:** [Accede aquí](https://docs.google.com/document/d/1jm7XVzMNtXdvODL4rA-e8vWEbzKD7CJ24IId1VVeDOU/edit?usp=sharing)  
+📄 **Documentación del Proyecto:** [Accede aquí](https://docs.google.com/document/d/1bFlV5pF-0JIMh8mFg1ypAGV_cvoFzNgsO-kVD3HOEeI/edit?tab=t.0)  
 📄 **Manual de Usuario:** [Accede aquí](https://docs.google.com/document/d/1F2BFgkY1w0rAVAzYAiSXa0qL9p8KOUO0BqNtUea6iuY/edit?usp=sharing)  
 📄 **Manual Tecnico:** [Accede aquí](https://docs.google.com/document/d/16Bp7-YPCxqdaBTn71wYNEdGiIPRmIG2al1yqvAy-1Zw/edit?usp=sharing)  
 
