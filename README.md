@@ -145,8 +145,11 @@ https://github.com/Alexaa9/AsesoriaRepositorioNuevo.git
 
 ---
 
-📄 **Documentación del Proyecto:** [Accede aquí](https://docs.google.com/document/d/1bFlV5pF-0JIMh8mFg1ypAGV_cvoFzNgsO-kVD3HOEeI/edit?tab=t.0)  
-📄 **Manual de Usuario:** [Accede aquí](https://docs.google.com/document/d/1F2BFgkY1w0rAVAzYAiSXa0qL9p8KOUO0BqNtUea6iuY/edit?usp=sharing)  
-📄 **Manual Tecnico:** [Accede aquí](https://docs.google.com/document/d/16Bp7-YPCxqdaBTn71wYNEdGiIPRmIG2al1yqvAy-1Zw/edit?usp=sharing)  
+📄 **Documentación del Proyecto:** [Proyecto Asesorias.pdf](https://github.com/user-attachments/files/20560434/Proyecto.Asesorias.pdf)
+
+📄 **Manual de Usuario:** [Manual de usuario.pdf](https://github.com/user-attachments/files/20560437/Manual.de.usuario.pdf)
+
+📄 **Manual Tecnico:** [Manual Tecnico.pdf](https://github.com/user-attachments/files/20560438/Manual.Tecnico.pdf)
+
 
 
