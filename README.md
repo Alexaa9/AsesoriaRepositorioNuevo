@@ -149,7 +149,8 @@ https://github.com/Alexaa9/AsesoriaRepositorioNuevo.git
 
 📄 **Manual de Usuario:** [Manual de usuario.pdf](https://github.com/user-attachments/files/20560437/Manual.de.usuario.pdf)
 
-📄 **Manual Tecnico:** [Manual Tecnico.pdf](https://github.com/user-attachments/files/20560438/Manual.Tecnico.pdf)
+📄 **Manual Tecnico:** [Manual Tecnico.pdf](https://github.com/user-attachments/files/20585217/Manual.Tecnico.pdf)
+
 
 
 
